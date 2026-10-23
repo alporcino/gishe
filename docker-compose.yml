@@ -1,0 +1,51 @@
+# Gishe: tek komutla tüm servisler ->  docker compose up --build
+#   Arayüz:  http://localhost:3000
+#   API:     http://localhost:8000  (belgeler: /docs, durum: /health)
+# GPU gerekmez; her şey CPU'da çalışır. Ayarlar .env dosyasından okunur (örnek: .env.example).
+name: gishe
+
+services:
+  # Yapay zekâ: Ollama + Qwen (model derleme sırasında imaja indirilir)
+  ollama:
+    build:
+      context: ./ollama
+      args:
+        MODEL: ${MODEL:-qwen2.5:3b}
+    restart: unless-stopped
+    # Dışarıya açılmaz; sadece arka uç erişir.
+
+  # Arka uç: FastAPI + iş mantığı + asistan
+  backend:
+    build: ./backend
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      OLLAMA_URL: http://ollama:11434
+      MODEL: ${MODEL:-qwen2.5:3b}
+    ports:
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - gishe_veri:/app/veri          # talepler kapatıp açınca kaybolmaz
+    depends_on:
+      ollama:
+        condition: service_started    # yapay zekâ hazır olana kadar asistan yedek modda çalışır
+    restart: unless-stopped
+
+  # Ön yüz: derlenmiş arayüz, nginx ile sunulur; arka uca sadece API üzerinden bağlanır
+  frontend:
+    build: ./frontend
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      BACKEND_URL: http://backend:8000
+    ports:
+      - "${FRONTEND_PORT:-3000}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  gishe_veri:
