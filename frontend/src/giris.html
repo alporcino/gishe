@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gishe – Giriş</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="giris-sayfa">
+    <section class="giris-kutu">
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <span class="giris-logo">Gishe</span>
+        <span class="soluk">Üniversite talep ve destek sistemi</span>
+      </div>
+
+      <form id="giris-formu" class="kart" novalidate>
+        <h1 style="font-size:20px">Giriş yap</h1>
+        <div class="alan">
+          <label for="eposta">Kurumsal e-posta</label>
+          <input id="eposta" type="email" autocomplete="username" placeholder="ad@ogr.gishe.edu.tr">
+        </div>
+        <div class="alan">
+          <label for="sifre">Şifre</label>
+          <input id="sifre" type="password" autocomplete="current-password">
+        </div>
+        <span id="hata" class="hata" role="alert"></span>
+        <button class="buton" type="submit">Giriş yap</button>
+        <span class="cok-kucuk soluk">Hangi ekranı göreceğinizi hesabınızın rolü belirler; rol seçilemez.</span>
+      </form>
+
+      <details class="kart" id="demo-kutu" open hidden>
+        <summary class="etiket" style="cursor:pointer;min-height:32px">Demo hesapları</summary>
+        <span class="cok-kucuk soluk">Sunum içindir; gerçek sistemde bu liste yoktur (DEMO_MODU=false). Bir hesaba tıklayınca o hesapla giriş yapılır.</span>
+        <div id="hesaplar" class="hesap-listesi"></div>
+      </details>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="ortak.js"></script>
+  <script>
+    const form = document.getElementById("giris-formu");
+    const hata = document.getElementById("hata");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      hata.textContent = "";
+      const eposta = document.getElementById("eposta").value.trim();
+      const sifre = document.getElementById("sifre").value;
+      if (!eposta || !sifre) { hata.textContent = "E-posta ve şifre gerekli."; return; }
+      try {
+        const ben = await api("/api/giris", { eposta, sifre });
+        location.href = ROL_SAYFASI[ben.rol];
+      } catch (err) {
+        hata.textContent = err.message;
+      }
+    });
+
+    // Zaten giriş yapılmışsa doğrudan kendi ekranına geç
+    fetch(API_TABAN + "/api/ben", { credentials: "include" }).then((y) => (y.ok ? y.json() : null)).then((ben) => {
+      if (ben) location.href = ROL_SAYFASI[ben.rol];
+    }).catch(() => {});
+
+    api("/api/demo-hesaplar").then((liste) => {
+      if (!liste.length) return;
+      document.getElementById("demo-kutu").hidden = false;
+      const gruplar = { ogrenci: "Öğrenciler", akademisyen: "Akademisyenler", personel: "Birim personeli" };
+      document.getElementById("hesaplar").innerHTML = Object.entries(gruplar).map(([rol, baslik]) => `
+        <div class="hesap-grup">
+          <span class="cok-kucuk" style="font-weight:800">${baslik}</span>
+          ${liste.filter((h) => h.rol === rol).map((h) => `
+            <button type="button" class="hesap" data-eposta="${kacis(h.eposta)}">
+              <strong>${kacis(h.ad)}</strong><span>${kacis(h.eposta)}</span>
+            </button>`).join("")}
+        </div>`).join("");
+      document.getElementById("hesaplar").addEventListener("click", async (e) => {
+        const b = e.target.closest("button.hesap");
+        if (!b) return;
+        hata.textContent = "";
+        b.disabled = true;
+        try {
+          const ben = await api("/api/demo-giris", { eposta: b.dataset.eposta });
+          location.href = ROL_SAYFASI[ben.rol];
+        } catch (err) {
+          hata.textContent = err.message;
+          b.disabled = false;
+        }
+      });
+    }).catch(() => {});
+  </script>
+</body>
+</html>

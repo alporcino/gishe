@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gishe – Personel paneli</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="panel">
+    <aside class="yan-menu">
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <span class="logo">Gishe</span>
+        <span style="font-size:13px;color:#C7CDD4;padding:0 8px">Personel paneli</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:2px;padding:12px;border-radius:10px;background:var(--gece-2)">
+        <strong id="kullanici-ad" style="font-size:14px">…</strong>
+        <span id="kullanici-birim" style="font-size:12px;color:#C7CDD4"></span>
+      </div>
+      <nav aria-label="Talep filtreleri" id="filtreler">
+        <button type="button" data-filtre="acik" aria-pressed="true">Açık talepler <span class="rozet" id="rozet-acik">0</span></button>
+        <button type="button" data-filtre="asan" aria-pressed="false">Süresi aşanlar <span class="rozet uyari" id="rozet-asan">0</span></button>
+        <button type="button" data-filtre="kapali" aria-pressed="false">Sonuçlananlar</button>
+      </nav>
+      <div class="alt">
+        <button type="button" id="cikis">Çıkış yap</button>
+        <button type="button" id="sifirla">Demo verisini sıfırla</button>
+      </div>
+    </aside>
+
+    <main class="ana">
+      <div class="ust-satir" style="flex-wrap:wrap">
+        <div>
+          <h1 id="baslik">Gelen talepler</h1>
+          <span class="kucuk soluk" id="daire"></span>
+        </div>
+        <span class="cok-kucuk soluk">Liste 10 saniyede bir kendiliğinden yenilenir.</span>
+      </div>
+
+      <div class="istatistikler" id="istatistikler"></div>
+
+      <div class="iki-sutun">
+        <div class="tablo-kutu">
+          <table>
+            <thead>
+              <tr><th>No</th><th>Konu</th><th>Talep eden</th><th>Bu birimde</th><th>Durum</th></tr>
+            </thead>
+            <tbody id="tablo"></tbody>
+          </table>
+        </div>
+        <section class="kart detay" id="detay" aria-live="polite">
+          <div class="bos">Ayrıntıyı görmek için listeden bir talep seçin.</div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="ortak.js"></script>
+  <script src="personel.js"></script>
+</body>
+</html>

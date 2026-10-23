@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Gishe – Akademisyen</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="ust-bar">
+    <div style="display:flex;align-items:baseline;gap:10px">
+      <span class="logo">Gishe</span>
+      <span class="kucuk soluk">Akademisyen</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="kucuk" style="font-weight:700" id="kullanici-ad"></span>
+      <button type="button" class="cikis" id="cikis">Çıkış</button>
+    </div>
+  </header>
+
+  <main class="akademisyen-ana">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <h1 id="selam">Merhaba</h1>
+      <span class="soluk">Arıza, bilgi işlem ve personel işlemlerinizi buradan bildirip takip edebilirsiniz.</span>
+    </div>
+
+    <div class="iki-sutun">
+      <section class="kart" style="flex:3 1 520px;min-width:0;gap:16px">
+        <h2>Hızlı talep</h2>
+        <div class="kategoriler" id="kategoriler" role="group" aria-label="Talep türü">
+          <button type="button" class="kategori" data-kategori="Teknik arıza" data-birim="Yapı İşleri" aria-pressed="true">
+            <strong>Teknik arıza</strong><span>Projeksiyon, klima, elektrik</span></button>
+          <button type="button" class="kategori" data-kategori="Bilgi işlem" data-birim="Bilgi İşlem" aria-pressed="false">
+            <strong>Bilgi işlem</strong><span>E-posta, ağ, yazılım, bilgisayar</span></button>
+          <button type="button" class="kategori" data-kategori="Personel işleri" data-birim="Personel Daire Başkanlığı" aria-pressed="false">
+            <strong>Personel işleri</strong><span>İzin, görevlendirme, belge</span></button>
+          <button type="button" class="kategori" data-kategori="Fakülte" data-birim="Fakülte Sekreterliği" aria-pressed="false">
+            <strong>Fakülte</strong><span>Salon, sınav, ders programı</span></button>
+        </div>
+
+        <form id="talep-formu" style="display:flex;flex-direction:column;gap:12px;margin:0">
+          <div class="alan">
+            <label for="konu">Konu</label>
+            <input id="konu" type="text" maxlength="120" placeholder="Örn. B-204 projeksiyon görüntü vermiyor">
+          </div>
+          <div class="alan" id="konum-alani">
+            <label for="konum">Konum (bina / oda)</label>
+            <input id="konum" type="text" maxlength="120" placeholder="Örn. Mühendislik B Blok, B-204">
+          </div>
+          <div class="alan">
+            <label for="aciklama">Açıklama</label>
+            <textarea id="aciklama" placeholder="Sorunu kısaca anlatın. Ders saatinizi etkiliyorsa belirtin."></textarea>
+          </div>
+          <span class="kucuk soluk" id="hedef-bilgi"></span>
+          <span id="talep-hata" class="hata" role="alert"></span>
+          <button class="buton" type="submit" style="align-self:flex-start">Talebi gönder</button>
+        </form>
+
+        <div class="ayrac">
+          <form id="sor-formu" class="alan">
+            <label for="soru">Önce sormak isterseniz: asistan</label>
+            <div class="satir">
+              <input id="soru" type="text" placeholder="Örn. Görevlendirme talebini ne zaman yapmalıyım?" autocomplete="off">
+              <button class="buton ikincil" type="submit">Sor</button>
+            </div>
+          </form>
+          <div id="asistan-cevap"></div>
+        </div>
+      </section>
+
+      <section class="kart" style="flex:2 1 380px;min-width:0" aria-live="polite">
+        <h2>Taleplerim</h2>
+        <div id="talepler"><span class="soluk">Yükleniyor…</span></div>
+      </section>
+    </div>
+
+    <section class="kart" id="detay" hidden aria-live="polite"></section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="ortak.js"></script>
+  <script src="akademisyen.js"></script>
+</body>
+</html>
