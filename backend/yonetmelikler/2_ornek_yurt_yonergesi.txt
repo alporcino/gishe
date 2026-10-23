@@ -1,0 +1,16 @@
+BAŞLIK: Örnek Yurt Yönergesi
+BİRİM: Barınma Birimi
+KİTLE: ogrenci
+NOT: Bu metin demo için hazırlanmış ÖRNEKTİR, gerçek bir yönerge değildir. Gerçek kullanımda üniversitenin kendi yönergesi ile değiştirilmelidir.
+
+Madde 4 – Yaz dönemi konaklama
+Yaz okulunda ders alan veya yaz döneminde kampüste staj yapan öğrenciler yaz döneminde yurtta kalabilir. Güz ve bahar dönemlerindeki yurt hakkı yaz dönemine kendiliğinden devam etmez; yaz için ayrıca başvuru yapılır.
+
+Madde 5 – Yaz dönemi başvurusu ve gerekli belgeler
+Yaz dönemi yurt başvuruları Barınma Birimine yapılır. Başvuruda öğrenci belgesi ve gelir durumu belgesi istenir. Yaz okulunda ders alan öğrenciler ayrıca ders kayıt çıktısını ekler.
+
+Madde 6 – Yurt ücretleri
+Yurt ücretleri aylık olarak belirlenir ve her ayın ilk beş iş günü içinde ödenir. Yaz dönemi ücreti kalınan hafta sayısına göre hesaplanır.
+
+Madde 8 – Yurttan ayrılma
+Yurttan ayrılmak isteyen öğrenci, ayrılmadan en az beş gün önce Barınma Birimine yazılı bildirimde bulunur. Odasını eksiksiz teslim etmeyen öğrencinin depozitosu iade edilmez.

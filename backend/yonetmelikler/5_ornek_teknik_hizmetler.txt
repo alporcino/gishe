@@ -1,0 +1,13 @@
+BAŞLIK: Örnek Yapı ve Teknik Hizmetler Yönergesi
+BİRİM: Yapı İşleri
+KİTLE: akademisyen
+NOT: Bu metin demo için hazırlanmış ÖRNEKTİR, gerçek bir yönerge değildir. Gerçek kullanımda üniversitenin kendi yönergesi ile değiştirilmelidir.
+
+Madde 2 – Derslik cihazları
+Dersliklerdeki projeksiyon, ses sistemi ve akıllı tahta arızaları Yapı İşleri'ne bildirilir. Ders saatini etkileyen arızalara aynı gün, diğer arızalara en geç iki iş günü içinde müdahale edilir.
+
+Madde 3 – İklimlendirme
+Ofis ve dersliklerdeki klima, ısıtma ve havalandırma arızaları Yapı İşleri'ne bildirilir. Bildirimde bina ve oda numarası belirtilir.
+
+Madde 4 – Elektrik ve tesisat
+Elektrik, aydınlatma, priz ve su tesisatı arızaları Yapı İşleri'ne bildirilir. Can ve mal güvenliğini tehdit eden durumlarda ayrıca güvenlik birimine haber verilir.

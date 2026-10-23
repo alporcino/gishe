@@ -1,0 +1,13 @@
+BAŞLIK: Örnek Akademik Personel İşlemleri Rehberi
+BİRİM: Personel Daire Başkanlığı
+KİTLE: akademisyen
+NOT: Bu metin demo için hazırlanmış ÖRNEKTİR, gerçek bir rehber değildir. Gerçek kullanımda üniversitenin kendi mevzuatı ile değiştirilmelidir.
+
+Madde 5 – Yurt içi görevlendirme
+Bilimsel toplantı, kongre ve sempozyumlara katılmak isteyen öğretim elemanları, etkinlik tarihinden en az on beş gün önce bölüm başkanlığı onayıyla görevlendirme talebinde bulunur. Talepler fakülte yönetim kurulu kararından sonra Personel Daire Başkanlığı tarafından işleme alınır.
+
+Madde 6 – Yıllık izin
+Yıllık izin talepleri en az üç iş günü önceden bölüm başkanlığına iletilir. Onaylanan izinler Personel Daire Başkanlığı tarafından kayda alınır.
+
+Madde 7 – Hizmet belgesi
+Hizmet belgesi e-Devlet üzerinden alınabilir. Islak imzalı hizmet belgesi gereken durumlarda Personel Daire Başkanlığı'na talep açılır ve belge en geç beş iş günü içinde hazırlanır.

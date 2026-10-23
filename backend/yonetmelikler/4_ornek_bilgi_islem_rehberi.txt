@@ -1,0 +1,16 @@
+BAŞLIK: Örnek Bilgi İşlem Hizmetleri Rehberi
+BİRİM: Bilgi İşlem
+KİTLE: ortak
+NOT: Bu metin demo için hazırlanmış ÖRNEKTİR, gerçek bir rehber değildir. Gerçek kullanımda üniversitenin kendi rehberi ile değiştirilmelidir.
+
+Madde 1 – Kurumsal e-posta şifresi
+Kurumsal e-posta şifresini unutan kullanıcılar şifrelerini e-Devlet ile kimlik doğrulayarak şifre sıfırlama sayfasından kendileri yenileyebilir. Sıfırlama sonrası giriş yapılamıyorsa Bilgi İşlem'e talep açılır; talepler en geç iki iş günü içinde sonuçlandırılır.
+
+Madde 2 – Kampüs kablosuz ağı (eduroam)
+Kampüs kablosuz ağına eduroam ağı üzerinden, kurumsal e-posta adresi ve şifresiyle bağlanılır. Bağlantı sorunu yaşayan kullanıcılar cihazdaki eduroam ağını silip yeniden eklemelidir.
+
+Madde 3 – Yazılım lisansları
+Üniversitenin lisansladığı yazılımlar akademik ve idari personel ile öğrencilerin kullanımına açıktır. Laboratuvar bilgisayarları için lisans talepleri Bilgi İşlem'e yapılır ve en geç iki iş günü içinde değerlendirilir.
+
+Madde 4 – Bilgisayar ve yazıcı arızaları
+Kurumun demirbaşına kayıtlı bilgisayar ve yazıcıların arızaları Bilgi İşlem'e bildirilir. Arıza bildiriminde cihazın demirbaş numarası ve bulunduğu oda belirtilir.

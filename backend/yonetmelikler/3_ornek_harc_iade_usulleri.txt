@@ -1,0 +1,10 @@
+BAŞLIK: Örnek Harç ve Ücret İadesi Usulleri
+BİRİM: Strateji Geliştirme
+KİTLE: ogrenci
+NOT: Bu metin demo için hazırlanmış ÖRNEKTİR, gerçek bir düzenleme değildir. Gerçek kullanımda üniversitenin kendi düzenlemesi ile değiştirilmelidir.
+
+Madde 3 – Fazla veya yanlış ödenen harç
+Fazla veya yanlış yatırılan katkı payı ve öğrenim ücretinin iadesi için öğrenci, ödeme dekontu ve IBAN bilgisiyle Strateji Geliştirme Daire Başkanlığına başvurur. İade, başvurunun onaylanmasından sonra en geç otuz gün içinde yapılır.
+
+Madde 4 – Kaydı silinen öğrencinin harç iadesi
+Dönem başlamadan kaydını sildiren öğrencinin o döneme ait yatırdığı harç iade edilir. Dönem başladıktan sonra yapılan kayıt silme işlemlerinde harç iadesi yapılmaz.
