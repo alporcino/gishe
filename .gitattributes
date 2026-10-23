@@ -1,0 +1,6 @@
+# Windows'ta da Linux konteynerlerinde çalışsın diye betikler ve yapılandırmalar LF satır sonuyla tutulur
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.mp4 binary
+*.pdf binary

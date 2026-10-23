@@ -1,0 +1,21 @@
+# Gizli ayarlar asla depoya girmez
+.env
+.env.*
+!.env.example
+
+# Çalışma verisi
+backend/veri/
+*.db
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# Node
+node_modules/
+frontend/dist/
+
+# Sistem
+.DS_Store
+Thumbs.db
