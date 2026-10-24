@@ -57,7 +57,7 @@ Gishe üç söz verir: **her talebin bir sahibi var, her adım görünür, her s
 
 ### Gerekenler
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows'ta WSL 2 ile). `docker run hello-world` çalışıyorsa hazırsınız.
-- İnternet bağlantısı (sadece ilk derlemede) ve yaklaşık **8 GB boş disk**. GPU **gerekmez**.
+- İnternet bağlantısı (sadece ilk derlemede) ve yaklaşık **20 GB boş disk**. GPU **gerekmez**.
 
 ### Tek komut
 
@@ -67,8 +67,9 @@ cd gishe
 docker compose up --build
 ```
 
-- İlk derleme **10–20 dakika** sürebilir: Python, Node, nginx, Ollama imajları ve yaklaşık 2 GB'lık Qwen modeli indirilir.
-  Model **derleme sırasında otomatik** iner; elle dosya kopyalamak gerekmez. Sonraki açılışlar saniyeler sürer.
+- İlk derleme internet hızına göre **20–60 dakika** sürebilir: Python, Node, nginx ve Ollama imajları
+  (yaklaşık 4 GB) ile 2 GB'lık Qwen modeli indirilir. Model **derleme sırasında otomatik** iner;
+  elle dosya kopyalamak gerekmez. Sonraki açılışlar saniyeler sürer.
 - Hazır olunca:
 
 | Ne | Adres |
@@ -127,8 +128,10 @@ ya da `.env` içinde `API_URL=http://localhost:8000` verilirse doğrudan (arka u
   Daha hızlı cevap için `.env` içinde `MODEL=qwen2.5:1.5b` yapılabilir.
 - **Harici yapay zekâ API'si yoktur.** Ürün hiçbir bulut servisine (Claude, OpenAI, Gemini…) istek atmaz.
 - **Yöntem (RAG – "bul, sonra cevapla"):**
-  1. `backend/yonetmelikler/` klasöründeki metinler maddelere bölünür.
-  2. Soruya en ilgili maddeler bulunur; kullanıcının rolüne uygun olmayan metinler aranmaz.
+  1. `backend/yonetmelikler/` klasöründeki metinler maddelere (uzunsa fıkra gruplarına) bölünür.
+  2. Soruya en ilgili maddeler bulunur. Seyrek kelimeler ("burs", "yatay") daha ağır sayılır, madde başlığında geçen
+     kelimeler öne çıkar ve öğrencinin günlük dili yönetmelik diline köprülenir ("AKTS" → "kredi yükü",
+     "Erasmus" → "değişim programı"). Kullanıcının rolüne uygun olmayan metinler aranmaz.
   3. Model, **sadece bu maddelere dayanarak** cevap vermeye zorlanır; cevabın altında kaynak gösterilir.
   4. İlgili madde yoksa ya da model emin değilse asistan "emin değilim" der ve doğru birime iletmeyi önerir.
 - **Yedek mod:** Model henüz yüklenmediyse veya cevap gecikirse uygulama çökmez; asistan en ilgili yönetmelik
@@ -137,8 +140,13 @@ ya da `.env` içinde `API_URL=http://localhost:8000` verilirse doğrudan (arka u
   Model açılışta belleğe yüklenir, böylece ilk soruda beklenmez. Cevap beklerken ekranda yükleniyor göstergesi görünür.
 - Görüntü işleme yapılmaz; **YOLO ailesinden hiçbir model kullanılmaz.**
 
-> `backend/yonetmelikler/` içindeki metinler demo için hazırlanmış **örnek** metinlerdir, resmî yönetmelik değildir.
-> Gerçek kullanımda üniversitenin metinleri aynı biçimde eklenir.
+> **Bilgi kaynağı (`backend/yonetmelikler/`):**
+> - GTÜ'nün resmî metinlerinden dönüştürülenler: Ön Lisans ve Lisans Eğitim-Öğretim Yönetmeliği, Yatay Geçiş Yönergesi,
+>   Yan Dal Programı Yönergesi, Mühendislik ve İşletme Fakültesi staj yönergeleri, GTÜ Vakfı burs bilgileri.
+> - Demo için hazırlanmış **örnek** metinler (dosya adında `ornek` geçer): yurt, harç iadesi, bilgi işlem,
+>   teknik hizmetler ve akademik personel işlemleri. Gerçek kullanımda üniversitenin metinleriyle değiştirilir.
+> - Yeni bir metin eklemek için aynı biçimde `.txt` dosyası koyup `docker compose up --build` demek yeterlidir;
+>   model değişmez, imaj boyutu sadece birkaç KB artar.
 
 ## Ayarlar
 
