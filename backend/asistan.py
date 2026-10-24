@@ -40,6 +40,9 @@ ben benim bana sen senin biz var yok olarak olur olursa gibi daha de da ki ya ve
 çok en her kadar sonra önce olan ise istiyorum isterim lazım gerekiyor gerekir acaba
 miyim mıyım muyum müyüm misin mısın merhaba lütfen teşekkürler öğrenci öğrenciyim
 üniversite üniversitede okul yapmalıyım yapabilirim yapılır edebilir alabilir
+söyler söyle söyleyebilir anlat anlatır anlatabilir misiniz musun müsün hakkında bilgi
+nedir neler nelerdir ister istiyor istersem gerek gerekli şey şeyler hangisi kaç
+gtü gebze teknik ise olarak eğer mi
 """.split())
 
 # Talebi hangi birime yönlendireceğimizi belirleyen anahtar kelimeler (sıra önemli).
@@ -72,16 +75,28 @@ def kucult(metin: str) -> str:
 
 
 def kokler(metin: str) -> list[str]:
-    """Kelimeleri bulur, önemsizleri atar, her kelimenin ilk 4 harfini 'kök' sayar.
-    Türkçe eklemeli bir dil olduğu için bu basit yöntem şaşırtıcı derecede iyi çalışır:
-    'yurtta', 'yurtlarda', 'yurdu' -> 'yurt'..."""
+    """Kelimeleri bulur, önemsizleri atar, her kelimenin ilk 6 harfini 'kök' olarak tutar.
+    Türkçe eklemeli bir dil olduğu için ön ek karşılaştırması iyi çalışır:
+    'yurtta', 'yurtlarda' -> 'yurt…'. Eşleşmenin gücü ortak ön ekin uzunluğuna göre ölçülür."""
     kelimeler = re.findall(r"[a-zçğıöşü0-9]+", kucult(metin))
-    return [k[:4] for k in kelimeler if len(k) > 2 and k not in DURAKLAR]
+    return [k[:6] for k in kelimeler if len(k) > 2 and k not in DURAKLAR]
+
+
+def benzerlik(a: str, b: str) -> float:
+    """İki kökün benzerliği: 0 (yok), 0.4 (sadece ilk 4 harf ortak, ör. sınır/sınıf), 1 (güçlü eşleşme)."""
+    n = 0
+    for x, y in zip(a, b):
+        if x != y:
+            break
+        n += 1
+    kisa = min(len(a), len(b))
+    if n >= 5 or (n == kisa and kisa >= 3):
+        return 1.0
+    return 0.4 if n >= 4 else 0.0
 
 
 def eslesir(a: str, b: str) -> bool:
-    k = min(len(a), len(b))
-    return k >= 3 and a[:k] == b[:k]
+    return benzerlik(a, b) >= 1.0
 
 
 def yonlendir(metin: str, rol: str = "ogrenci") -> str:
@@ -130,21 +145,81 @@ def yonetmelikleri_yukle() -> list[dict]:
 
 PARCALAR = yonetmelikleri_yukle()
 
+# Kelime ağırlıkları: bir kelime ailesi (ilk 4 harf) ne kadar az maddede geçiyorsa o kadar belirleyicidir.
+# "burs", "yatay", "akts" ağır; "ders", "alabilir", "zaman" gibi her yerde geçenler hafif sayılır.
+_AILE: dict[str, int] = {}
+for _p in PARCALAR:
+    _sayim: dict[str, int] = {}
+    for _k in kokler(_p["metin"]):
+        _sayim[_k] = _sayim.get(_k, 0) + 1
+    _p["sayim"] = _sayim
+    _p["kokler"] = frozenset(_sayim)
+    _p["baslik_kokleri"] = set(kokler(_p["metin"].splitlines()[0]))
+    for _a in {x[:4] for x in _sayim}:
+        _AILE[_a] = _AILE.get(_a, 0) + 1
+_N = max(1, len(PARCALAR))
+BILINMEYEN_AGIRLIK = 1.5  # metinlerde hiç geçmeyen kelime ("futbol"): konu dışı soruları ayırt etmeye yardım eder
+
+
+# Öğrencinin günlük dili ile yönetmelik dili arasındaki köprü (eş anlamlılar).
+# Soruda soldaki kelime geçerse, maddede sağdakilerden biri de eşleşme sayılır.
+ES_ANLAMLI = {
+    "akts": ["kredi", "yükü"], "kredi": ["akts"],
+    "devams": ["devam"], "devamsız": ["devam"],
+    "dondur": ["izin", "yarıyıl"], "kaydım": ["kayıt"],
+    "bırakm": ["çıkarm", "ekleme"], "bırakı": ["çıkarm"], "add": ["ekleme"], "drop": ["çıkarm"],
+    "erasmu": ["değişi"], "değişi": ["erasmu"],
+    "ortala": ["ortalam", "agno", "gno"], "agno": ["ortala"], "gno": ["ortala"],
+    "harf": ["notlar"], "kaldım": ["başarı", "tekrar"], "kalırs": ["başarı", "tekrar"],
+    "geçme": ["başarı"], "geçer": ["başarı"],
+    "mezun": ["mezuni", "diplom"], "diplom": ["mezuni"],
+    "transk": ["not", "transk"], "hazırl": ["ingili", "hazırl"],
+    "yaz": ["yaz"], "çap": ["çift"], "çift": ["çift"],
+}
+
+
+def es_anlamlilar(kok: str) -> list[str]:
+    return [x for anahtar, liste in ES_ANLAMLI.items() if benzerlik(kok, anahtar) >= 1.0 for x in liste]
+
+
+def agirlik(kok: str) -> float:
+    adet = _AILE.get(kok[:4], 0)
+    if not adet:
+        return BILINMEYEN_AGIRLIK
+    return max(0.3, math.log((_N + 1) / (adet + 0.5)))
+
 
 def ara(soru: str, rol: str = "ogrenci", adet: int = 3) -> list[dict]:
-    """Soruyla en çok kelimesi eşleşen maddeleri döndürür (sadece bu rolün görebileceği metinlerden).
-    Sorudaki anlamlı kelimelerin en az yarısı eşleşmezse 'bulunamadı' sayılır."""
+    """Soruyla en ilgili maddeleri döndürür (sadece bu rolün görebileceği metinlerden).
+    Sorudaki kelimelerin ağırlık toplamının en az %40'ı bir maddede karşılanmıyorsa
+    'bulunamadı' sayılır; asistan uydurmasın diye. Sıralamada kelimenin maddede kaç kez
+    geçtiği ve madde başlığında olup olmadığı da hesaba katılır."""
     soru_kokleri = list(dict.fromkeys(kokler(soru)))
     if not soru_kokleri:
         return []
-    gereken = max(1, math.ceil(len(soru_kokleri) * 0.5))
+    agirliklar = {s: agirlik(s) for s in soru_kokleri}
+    esler = {s: es_anlamlilar(s) for s in soru_kokleri}
+    toplam = sum(agirliklar.values())
     puanli = []
     for p in PARCALAR:
         if p["kitle"] not in ("ortak", rol):
             continue
-        puan = sum(any(eslesir(s, k) for k in p["kokler"]) for s in soru_kokleri)
-        if puan >= gereken:
-            puanli.append((puan, p))
+        kapsam = sira = 0.0
+        for s, a in agirliklar.items():
+            guc, tekrar = 0.0, 0
+            adaylar = [(s, 1.0)] + [(x, 0.8) for x in esler[s]]
+            for kk, n in p["sayim"].items():
+                b = max(benzerlik(aday, kk) * carpan for aday, carpan in adaylar)
+                if b > guc:
+                    guc, tekrar = b, n
+                elif b == guc and b:
+                    tekrar += n
+            if guc:
+                baslikta = any(benzerlik(aday, x) >= 1.0 for aday, _ in adaylar for x in p["baslik_kokleri"])
+                kapsam += a * guc
+                sira += a * guc * (1.5 if baslikta else 1.0) * (1 + 0.35 * math.log(1 + tekrar))
+        if kapsam >= 0.40 * toplam:
+            puanli.append((sira, p))
     puanli.sort(key=lambda x: x[0], reverse=True)
     return [p for _, p in puanli[:adet]]
 
@@ -152,12 +227,13 @@ def ara(soru: str, rol: str = "ogrenci", adet: int = 3) -> list[dict]:
 # ---------------------------------------------------------------------------
 # Yapay zekâ modeli
 # ---------------------------------------------------------------------------
-SISTEM_MESAJI = """Sen bir üniversitenin idari işler asistanısın.
-Görevin, kullanıcının sorusunu YALNIZCA sana verilen yönetmelik ve rehber maddelerine dayanarak cevaplamak.
+SISTEM_MESAJI = """Sen Gebze Teknik Üniversitesi'nin öğrenci işleri asistanı Gishe'sin.
+Görevin, kullanıcının sorusunu YALNIZCA sana verilen yönetmelik, yönerge ve bilgi metinlerine dayanarak cevaplamak.
 Kurallar:
-- Kısa, net ve samimi Türkçe kullan (en fazla 4 cümle).
-- Maddelerde olmayan hiçbir bilgiyi ekleme, tahmin yürütme.
-- Soru bu maddelerle cevaplanamıyorsa yalnızca BILMIYORUM yaz."""
+- Kısa, net ve samimi Türkçe kullan (en fazla 5 cümle). Sayıları, süreleri ve koşulları metindeki gibi aynen ver.
+- Metinlerde olmayan hiçbir bilgiyi ekleme, tahmin yürütme, genel bilgi verme.
+- Metin soruyu kısmen cevaplıyorsa, bildiğin kısmı söyle ve gerisi için ilgili birime başvurulmasını öner.
+- Soru bu metinlerle hiç cevaplanamıyorsa yalnızca BILMIYORUM yaz."""
 
 
 def _model_yuklu_mu() -> bool:
@@ -208,7 +284,7 @@ def modele_sor(soru: str, parcalar: list[dict]) -> str:
             "stream": False,
             "keep_alive": "24h",
             # CPU'da makul sürede cevap için: kısa bağlam, sınırlı cevap uzunluğu
-            "options": {"temperature": 0.1, "num_ctx": 2048, "num_predict": ayarlar.MODEL_EN_FAZLA_TOKEN},
+            "options": {"temperature": 0.1, "num_ctx": 3072, "num_predict": ayarlar.MODEL_EN_FAZLA_TOKEN},
             "messages": [
                 {"role": "system", "content": SISTEM_MESAJI},
                 {"role": "user", "content": f"YÖNETMELİK MADDELERİ:\n{maddeler}\n\nKULLANICININ SORUSU: {soru}"},
