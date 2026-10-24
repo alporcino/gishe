@@ -16,6 +16,8 @@ Temel kurallar (projenin fikri):
   - Her talebin her an bir "sahibi" (birimi) vardır: "Şu an kimde?"
   - Talep başka birime aktarılırken GEREKÇE ZORUNLUDUR ve talep sahibi bunu görür.
   - Her birimin bir hedef yanıt süresi (iş günü) vardır; aşılırsa işaretlenir.
+  - Talep sahibi, birimin her işleminden haberdar olur ("Yeni gelişme" işareti, isteğe bağlı e-posta).
+  - Sonuçlanan talep puanlanabilir; çözülmediyse gerekçe yazılarak yeniden açılabilir.
 """
 import datetime as dt
 import hashlib
@@ -37,6 +39,8 @@ from pydantic import BaseModel
 
 import asistan
 import ayarlar
+import bildirim
+import tatiller
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger("gishe")
@@ -90,25 +94,42 @@ def simdi() -> dt.datetime:
     return dt.datetime.now(TR).replace(tzinfo=None, microsecond=0)
 
 
+class Baglanti(sqlite3.Connection):
+    """"with baglan() as con:" bloğu bitince işlemi kaydeder (hata varsa geri alır) VE bağlantıyı kapatır.
+    (sqlite3'ün kendi "with" desteği bağlantıyı kapatmaz; kapatılmayan bağlantılar birikir.)"""
+
+    def __exit__(self, *hata):
+        try:
+            return super().__exit__(*hata)
+        finally:
+            self.close()
+
+
 def baglan() -> sqlite3.Connection:
-    con = sqlite3.connect(DB_YOLU)
+    con = sqlite3.connect(DB_YOLU, factory=Baglanti, timeout=10)
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA foreign_keys = ON")
     return con
 
 
-def sifre_ozeti(sifre: str, tuz: bytes) -> str:
+# OWASP 2023 önerisi: PBKDF2-HMAC-SHA256 için en az 600.000 tur. Eski kayıtlar (100.000 tur)
+# ilk başarılı girişte otomatik olarak yeni tur sayısıyla yeniden özetlenir.
+SIFRE_TUR = 600_000
+ESKI_SIFRE_TUR = 100_000
+
+
+def sifre_ozeti(sifre: str, tuz: bytes, tur: int = SIFRE_TUR) -> str:
     """Şifre veritabanına asla düz yazılmaz; tuzlanıp özetlenir (PBKDF2)."""
-    return hashlib.pbkdf2_hmac("sha256", sifre.encode(), tuz, 100_000).hex()
+    return hashlib.pbkdf2_hmac("sha256", sifre.encode(), tuz, tur).hex()
 
 
 def is_gunu_say(bas: dt.datetime, son: dt.datetime) -> int:
-    """İki zaman arasında kaç iş günü (hafta içi) geçtiğini sayar."""
+    """İki zaman arasında kaç iş günü geçtiğini sayar (hafta sonu ve resmî tatiller hariç)."""
     gun = 0
     d = bas.date()
     while d < son.date():
         d += dt.timedelta(days=1)
-        if d.weekday() < 5:
+        if tatiller.is_gunu_mu(d):
             gun += 1
     return gun
 
@@ -149,7 +170,8 @@ CREATE TABLE IF NOT EXISTS kullanicilar (
     aciklama TEXT NOT NULL,
     birim_id INTEGER REFERENCES birimler(id),
     sifre_tuz TEXT NOT NULL,
-    sifre_ozet TEXT NOT NULL
+    sifre_ozet TEXT NOT NULL,
+    sifre_tur INTEGER NOT NULL DEFAULT 600000
 );
 CREATE TABLE IF NOT EXISTS oturumlar (
     anahtar TEXT PRIMARY KEY,
@@ -167,13 +189,19 @@ CREATE TABLE IF NOT EXISTS talepler (
     durum TEXT NOT NULL DEFAULT 'Yeni',
     olusturma TEXT NOT NULL,
     birime_gelis TEXT NOT NULL,   -- talep şu anki birime ne zaman geldi
-    guncelleme TEXT NOT NULL
+    guncelleme TEXT NOT NULL,
+    talep_eden_gordu INTEGER,     -- talep sahibinin gördüğü son olayın numarası ("Yeni gelişme" için)
+    birim_gordu INTEGER,          -- birim personelinin gördüğü son olayın numarası
+    sonuclanma TEXT,              -- talep ne zaman sonuçlandı (yeniden açma süresi için)
+    puan INTEGER CHECK (puan BETWEEN 1 AND 5),  -- talep sahibinin memnuniyet puanı
+    degerlendirme TEXT NOT NULL DEFAULT ''
 );
 -- Talebin "yolculuğu": her adım buraya bir satır olarak yazılır
 CREATE TABLE IF NOT EXISTS olaylar (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     talep_id INTEGER NOT NULL REFERENCES talepler(id),
     tur TEXT NOT NULL,            -- olusturuldu | aktarildi | mesaj_talep_eden | mesaj_birim | durum
+                                  -- | degerlendirme | yeniden_acildi
     baslik TEXT NOT NULL,
     metin TEXT NOT NULL DEFAULT '',
     kimden TEXT NOT NULL DEFAULT '',
@@ -208,6 +236,8 @@ def talep_olustur(con, talep_eden_id, birim_id, konu, aciklama, yonlendirme_notu
     )
     tid = cur.lastrowid
     olay_ekle(con, tid, "olusturuldu", "Talep oluşturuldu", yonlendirme_notu, "Sistem", zaman)
+    con.execute("UPDATE talepler SET talep_eden_gordu=(SELECT MAX(id) FROM olaylar WHERE talep_id=?) WHERE id=?",
+                (tid, tid))
     return tid
 
 
@@ -217,14 +247,16 @@ def talebi_aktar(con, talep_id, yeni_birim_id, gerekce, zaman=None):
     eski = birim_getir(con, t["birim_id"])["ad"]
     yeni = birim_getir(con, yeni_birim_id)["ad"]
     con.execute(
-        "UPDATE talepler SET birim_id=?, birime_gelis=?, durum='Yeni' WHERE id=?",
+        "UPDATE talepler SET birim_id=?, birime_gelis=?, durum='Yeni', birim_gordu=NULL WHERE id=?",
         (yeni_birim_id, zaman.isoformat(), talep_id),
     )
     olay_ekle(con, talep_id, "aktarildi", f"Aktarıldı: {yeni}", gerekce, f"{eski} → {yeni}", zaman)
 
 
 def durum_degistir(con, talep_id, yeni_durum, kimden, zaman=None):
-    con.execute("UPDATE talepler SET durum=? WHERE id=?", (yeni_durum, talep_id))
+    zaman = zaman or simdi()
+    sonuclanma = zaman.isoformat() if yeni_durum == "Sonuçlandı" else None
+    con.execute("UPDATE talepler SET durum=?, sonuclanma=? WHERE id=?", (yeni_durum, sonuclanma, talep_id))
     olay_ekle(con, talep_id, "durum", f"Durum: {yeni_durum}", "", kimden, zaman)
 
 
@@ -235,8 +267,9 @@ def ornek_veri(con):
         tuz = secrets.token_bytes(16)
         sifre = ayarlar.DEMO_SIFRE or secrets.token_urlsafe(16)  # şifre koda gömülü değil
         con.execute(
-            "INSERT INTO kullanicilar VALUES (?,?,?,?,?,?,?,?)",
-            (kid, ad, eposta, rol, aciklama, birim_id, tuz.hex(), sifre_ozeti(sifre, tuz)),
+            "INSERT INTO kullanicilar (id, ad, eposta, rol, aciklama, birim_id, sifre_tuz, sifre_ozet, sifre_tur) "
+            "VALUES (?,?,?,?,?,?,?,?,?)",
+            (kid, ad, eposta, rol, aciklama, birim_id, tuz.hex(), sifre_ozeti(sifre, tuz), SIFRE_TUR),
         )
     n = simdi()
 
@@ -321,16 +354,45 @@ def ornek_veri(con):
                   "Otomatik yönlendirme: Personel Daire Başkanlığı", kategori="Personel işleri",
                   zaman=once(hours=6))
 
+    # MATLAB talebi: akademisyen sonuçtan memnun, değerlendirmiş (personel panelindeki memnuniyet için)
+    con.execute("UPDATE talepler SET puan=5, degerlendirme=? WHERE konu='MATLAB lisans yenileme'",
+                ("Hızlı çözüldü, teşekkürler.",))
+    olay_ekle(con, 8, "degerlendirme", "Talep sahibi değerlendirdi: 5/5", "Hızlı çözüldü, teşekkürler.",
+              "Dr. Öğr. Üyesi Ayşe Demir", once(days=2, hours=20))
+
+    # Görülme zamanları: herkes taleplerine bakmış sayılır, demo için iki istisna:
+    #  - Ebru, yurt talebindeki son gelişmeyi (İnceleniyor) henüz görmedi -> "Yeni gelişme"
+    #  - Öğrenci İşleri, Mert'in yeni kayıt dondurma talebine henüz bakmadı -> "Yeni"
+    son = "(SELECT MAX(o.id) FROM olaylar o WHERE o.talep_id = talepler.id)"
+    con.execute(f"UPDATE talepler SET talep_eden_gordu={son}, birim_gordu={son}")
+    con.execute("UPDATE talepler SET talep_eden_gordu=(SELECT MAX(o.id) FROM olaylar o WHERE o.talep_id = "
+                "talepler.id AND o.tur='mesaj_talep_eden') WHERE konu='Yaz dönemi yurt başvurusu'")
+    con.execute("UPDATE talepler SET birim_gordu=NULL WHERE konu='Kayıt dondurma'")
+
+
+def sutun_ekle(con, tablo: str, sutun: str, tanim: str):
+    """Eski sürümle oluşturulmuş veritabanına (kalıcı Docker birimi) yeni sütunu ekler; veri kaybolmaz."""
+    if sutun not in {r["name"] for r in con.execute(f"PRAGMA table_info({tablo})")}:
+        con.execute(f"ALTER TABLE {tablo} ADD COLUMN {sutun} {tanim}")
+
+
+def gocler(con):
+    # Eski kayıtların şifresi 100.000 turla özetlenmişti
+    sutun_ekle(con, "kullanicilar", "sifre_tur", f"INTEGER NOT NULL DEFAULT {ESKI_SIFRE_TUR}")
+    # Bildirim ve değerlendirme sütunları
+    for sutun, tanim in [("talep_eden_gordu", "INTEGER"), ("birim_gordu", "INTEGER"), ("sonuclanma", "TEXT"),
+                         ("puan", "INTEGER"), ("degerlendirme", "TEXT NOT NULL DEFAULT ''")]:
+        sutun_ekle(con, "talepler", sutun, tanim)
+
 
 def kur(sifirla: bool = False):
     if sifirla and DB_YOLU.exists():
         DB_YOLU.unlink()
-    con = baglan()
-    con.executescript(SEMA)
-    if con.execute("SELECT COUNT(*) FROM birimler").fetchone()[0] == 0:
-        ornek_veri(con)
-    con.commit()
-    con.close()
+    with baglan() as con:
+        con.executescript(SEMA)
+        gocler(con)
+        if con.execute("SELECT COUNT(*) FROM birimler").fetchone()[0] == 0:
+            ornek_veri(con)
 
 
 # ---------------------------------------------------------------------------
@@ -380,18 +442,36 @@ def talebe_erisim(con, talep_id: int, kullanici: dict) -> dict:
 # ---------------------------------------------------------------------------
 # Talep verisini arayüze uygun hâle getirme
 # ---------------------------------------------------------------------------
+# son_birim_olayi: birimin talep sahibini ilgilendiren son işleminin numarası (mesaj, durum, aktarma)
+# son_talep_eden_olayi: talep sahibinin birimi ilgilendiren son işleminin numarası (mesaj, yeniden açma, değerlendirme)
+# Olay numaraları sürekli arttığı için "gördüğü son numaradan büyük" = görmediği gelişme (aynı saniyede de doğru).
 TALEP_SORGU = """
 SELECT t.*, b.ad AS birim_ad, b.daire, b.hedef_gun,
-       k.ad AS talep_eden_ad, k.rol AS talep_eden_rol, k.aciklama AS talep_eden_aciklama
+       k.ad AS talep_eden_ad, k.rol AS talep_eden_rol, k.aciklama AS talep_eden_aciklama,
+       (SELECT MAX(o.id) FROM olaylar o WHERE o.talep_id = t.id
+          AND o.tur IN ('mesaj_birim', 'durum', 'aktarildi') AND o.kimden <> 'Sistem') AS son_birim_olayi,
+       (SELECT MAX(o.id) FROM olaylar o WHERE o.talep_id = t.id
+          AND o.tur IN ('mesaj_talep_eden', 'yeniden_acildi', 'degerlendirme')) AS son_talep_eden_olayi
 FROM talepler t
 JOIN birimler b ON b.id = t.birim_id
 JOIN kullanicilar k ON k.id = t.talep_eden_id
 """
 
 
+def yeniden_acilabilir(r) -> bool:
+    if r["durum"] != "Sonuçlandı":
+        return False
+    if not r["sonuclanma"]:  # eski sürümden kalan kayıt: sonuçlanma zamanı bilinmiyor, izin ver
+        return True
+    return simdi() - dt.datetime.fromisoformat(r["sonuclanma"]) <= dt.timedelta(days=ayarlar.YENIDEN_ACMA_GUN)
+
+
 def talep_ozet(r) -> dict:
     acik = r["durum"] != "Sonuçlandı"
     gecen = is_gunu_say(dt.datetime.fromisoformat(r["birime_gelis"]), simdi())
+    # "Yeni gelişme": karşı tarafın son işlemi, bu tarafın gördüğü son olaydan sonra mı?
+    son_birim, gordu = r["son_birim_olayi"], r["talep_eden_gordu"] or 0
+    son_talep_eden, birim_gordu = r["son_talep_eden_olayi"] or 0, r["birim_gordu"]
     return {
         "id": r["id"],
         "no": f"GS-{2400 + r['id']}",
@@ -415,6 +495,13 @@ def talep_ozet(r) -> dict:
         "gecen_gun": gecen,
         "kalan_gun": (r["hedef_gun"] - gecen) if acik else None,
         "suresi_asti": acik and gecen > r["hedef_gun"],
+        "yeni_gelisme": bool(son_birim and son_birim > gordu),
+        # Birime yeni geldiyse (birim_gordu boş) ya da talep sahibi yeni bir şey yaptıysa
+        "birimde_yeni": birim_gordu is None or son_talep_eden > birim_gordu,
+        "sonuclanma": r["sonuclanma"],
+        "puan": r["puan"],
+        "degerlendirme": r["degerlendirme"],
+        "yeniden_acilabilir": yeniden_acilabilir(r),
     }
 
 
@@ -466,7 +553,8 @@ app.add_middleware(
 # ----------------------------------------------------------------- Hata yönetimi
 # Hatalı veya eksik girdi uygulamayı çökertmez; kullanıcıya anlaşılır bir Türkçe mesaj döner.
 ALAN_ADI = {"eposta": "E-posta", "sifre": "Şifre", "konu": "Konu", "aciklama": "Açıklama", "metin": "Mesaj",
-            "gerekce": "Gerekçe", "birim_id": "Birim", "durum": "Durum", "soru": "Soru"}
+            "gerekce": "Gerekçe", "birim_id": "Birim", "durum": "Durum", "soru": "Soru",
+            "puan": "Puan", "yorum": "Yorum"}
 
 
 @app.exception_handler(RequestValidationError)
@@ -529,18 +617,45 @@ def oturum_ac(con, k, response: Response) -> dict:
     return kullanici_ozet(k)
 
 
+# Hatalı giriş sayacı (e-posta başına). Arka uç nginx'in arkasında olduğu için IP'ye göre değil
+# hesaba göre sınırlanır: bir hesaba kaba kuvvetle şifre denenmesini engeller.
+_HATALI_GIRIS: dict[str, list[dt.datetime]] = {}
+_GIRIS_KILIDI = threading.Lock()
+
+
+def _hatali_denemeler(eposta: str) -> list[dt.datetime]:
+    sinir = simdi() - dt.timedelta(minutes=ayarlar.GIRIS_KILIT_DAKIKA)
+    liste = [z for z in _HATALI_GIRIS.get(eposta, []) if z > sinir]
+    _HATALI_GIRIS[eposta] = liste
+    return liste
+
+
 @app.post("/api/giris")
 def giris(istek: Giris, response: Response):
     eposta = istek.eposta.strip().lower()[:120]
     if not eposta or not istek.sifre:
         raise HTTPException(400, "E-posta ve şifre gerekli.")
+    with _GIRIS_KILIDI:
+        if len(_hatali_denemeler(eposta)) >= ayarlar.GIRIS_DENEME_SINIRI:
+            raise HTTPException(429, f"Çok fazla hatalı deneme yapıldı. {ayarlar.GIRIS_KILIT_DAKIKA} dakika sonra tekrar deneyin.")
     with baglan() as con:
         k = con.execute("SELECT * FROM kullanicilar WHERE eposta=?", (eposta,)).fetchone()
-        dogru = k is not None and hmac.compare_digest(
-            sifre_ozeti(istek.sifre[:200], bytes.fromhex(k["sifre_tuz"])), k["sifre_ozet"])
+        tuz = bytes.fromhex(k["sifre_tuz"]) if k else b"bos-tuz-zamanlama-icin"
+        tur = k["sifre_tur"] if k else SIFRE_TUR
+        # Hesap yoksa da özet hesaplanır: cevap süresinden hesabın var olup olmadığı anlaşılmasın
+        ozet = sifre_ozeti(istek.sifre[:200], tuz, tur)
+        dogru = k is not None and hmac.compare_digest(ozet, k["sifre_ozet"])
         if not dogru:
+            with _GIRIS_KILIDI:
+                _hatali_denemeler(eposta).append(simdi())
             # Hangi bilginin yanlış olduğunu söylemiyoruz (hesap tahminini zorlaştırır)
             raise HTTPException(401, "E-posta veya şifre hatalı.")
+        with _GIRIS_KILIDI:
+            _HATALI_GIRIS.pop(eposta, None)
+        if tur != SIFRE_TUR:  # eski özet: şifre doğru girildi, güçlü özetle yenile
+            yeni_tuz = secrets.token_bytes(16)
+            con.execute("UPDATE kullanicilar SET sifre_tuz=?, sifre_ozet=?, sifre_tur=? WHERE id=?",
+                        (yeni_tuz.hex(), sifre_ozeti(istek.sifre[:200], yeni_tuz), SIFRE_TUR, k["id"]))
         return oturum_ac(con, k, response)
 
 
@@ -616,11 +731,28 @@ def talep_listesi(kullanici: dict = Depends(aktif_kullanici)):
     return liste
 
 
+def goruldu(con, talep_id: int, kullanici: dict):
+    """Talebe bakan taraf için "yeni gelişme" işaretini kaldırır."""
+    sutun = "birim_gordu" if kullanici["rol"] == "personel" else "talep_eden_gordu"
+    con.execute(f"UPDATE talepler SET {sutun}=(SELECT MAX(id) FROM olaylar WHERE talep_id=?) WHERE id=?",
+                (talep_id, talep_id))
+
+
 @app.get("/api/talepler/{talep_id}")
 def talep_detay(talep_id: int, kullanici: dict = Depends(aktif_kullanici)):
     with baglan() as con:
         talebe_erisim(con, talep_id, kullanici)
+        goruldu(con, talep_id, kullanici)
         return talep_detayi(con, talep_id)
+
+
+def talep_sahibine_bildir(con, t: dict, ne_oldu: str):
+    """Talep sahibine (isteğe bağlı) e-posta bildirimi gönderir."""
+    if not bildirim.acik_mi():
+        return
+    k = con.execute("SELECT eposta FROM kullanicilar WHERE id=?", (t["talep_eden_id"],)).fetchone()
+    if k:
+        bildirim.talep_gelismesi(k["eposta"], t["no"], t["konu"], ne_oldu)
 
 
 class YeniTalep(BaseModel):
@@ -670,10 +802,12 @@ def mesaj_gonder(talep_id: int, istek: Mesaj, kullanici: dict = Depends(aktif_ku
             olay_ekle(con, talep_id, "mesaj_birim", f"{t['birim']} mesaj gönderdi", metin, t["birim"])
             if t["durum"] == "Yeni":
                 durum_degistir(con, talep_id, "İnceleniyor", t["birim"])
+            talep_sahibine_bildir(con, t, f"{t['birim']} size bir mesaj gönderdi.")
         else:
             olay_ekle(con, talep_id, "mesaj_talep_eden", "Talep eden mesaj gönderdi", metin, t["talep_eden"])
             if t["durum"] == "Bilgi bekleniyor":
                 durum_degistir(con, talep_id, "İnceleniyor", "Sistem")
+        goruldu(con, talep_id, kullanici)
         con.commit()
         return talep_detayi(con, talep_id)
 
@@ -698,6 +832,7 @@ def aktar(talep_id: int, istek: Aktarma, kullanici: dict = Depends(rol_gerekli("
         if not hizmet_verir(hedef, t["talep_eden_rol"]):
             raise HTTPException(400, f"{hedef['ad']} {t['talep_eden_rol_adi'].lower()} taleplerine bakmıyor.")
         talebi_aktar(con, talep_id, istek.birim_id, gerekce)
+        talep_sahibine_bildir(con, t, f"Talebiniz {hedef['ad']} birimine aktarıldı. Gerekçe uygulamada görünür.")
         con.commit()
         return talep_detayi(con, talep_id)
 
@@ -714,7 +849,64 @@ def durum_guncelle(talep_id: int, istek: DurumIstek, kullanici: dict = Depends(r
         t = talebe_erisim(con, talep_id, kullanici)
         if t["durum"] != istek.durum:
             durum_degistir(con, talep_id, istek.durum, t["birim"])
+            goruldu(con, talep_id, kullanici)
+            ne_oldu = ("Talebiniz sonuçlandı. Sonucu değerlendirebilir, çözülmediyse yeniden açabilirsiniz."
+                       if istek.durum == "Sonuçlandı" else f"Talebinizin durumu: {istek.durum}")
+            talep_sahibine_bildir(con, t, ne_oldu)
             con.commit()
+        return talep_detayi(con, talep_id)
+
+
+class Degerlendirme(BaseModel):
+    puan: int
+    yorum: str = ""
+
+
+@app.post("/api/talepler/{talep_id}/degerlendir")
+def degerlendir(talep_id: int, istek: Degerlendirme,
+                kullanici: dict = Depends(rol_gerekli("ogrenci", "akademisyen"))):
+    """Talep sahibi sonuçlanan talebini 1-5 puanla değerlendirir (bir kez). Bu, birimin
+    memnuniyet istatistiğine girer: üniversitenin öğrenci işleri için ölçemediği veriyi üretir."""
+    if not 1 <= istek.puan <= 5:
+        raise HTTPException(400, "Puan 1 ile 5 arasında olmalı.")
+    yorum = istek.yorum.strip()[:500]
+    with baglan() as con:
+        t = talebe_erisim(con, talep_id, kullanici)
+        if t["durum"] != "Sonuçlandı":
+            raise HTTPException(400, "Sadece sonuçlanan talepler değerlendirilebilir.")
+        if t["puan"]:
+            raise HTTPException(400, "Bu talebi zaten değerlendirdiniz.")
+        con.execute("UPDATE talepler SET puan=?, degerlendirme=? WHERE id=?", (istek.puan, yorum, talep_id))
+        olay_ekle(con, talep_id, "degerlendirme", f"Talep sahibi değerlendirdi: {istek.puan}/5", yorum,
+                  kullanici["ad"])
+        goruldu(con, talep_id, kullanici)
+        return talep_detayi(con, talep_id)
+
+
+class YenidenAc(BaseModel):
+    gerekce: str
+
+
+@app.post("/api/talepler/{talep_id}/yeniden-ac")
+def yeniden_ac(talep_id: int, istek: YenidenAc,
+               kullanici: dict = Depends(rol_gerekli("ogrenci", "akademisyen"))):
+    """Sorun çözülmediyse talep sahibi, sonuçlanmadan sonraki YENIDEN_ACMA_GUN gün içinde talebi
+    gerekçe yazarak yeniden açar. Talep aynı birime "Yeni" olarak döner, hedef süre baştan başlar."""
+    gerekce = istek.gerekce.strip()[:500]
+    if len(gerekce) < 10:
+        raise HTTPException(400, "Neyin çözülmediğini kısaca yazın (en az 10 karakter). Birim bu gerekçeyi görür.")
+    with baglan() as con:
+        t = talebe_erisim(con, talep_id, kullanici)
+        if t["durum"] != "Sonuçlandı":
+            raise HTTPException(400, "Talep zaten açık.")
+        if not t["yeniden_acilabilir"]:
+            raise HTTPException(400, f"Sonuçlanmanın üzerinden {ayarlar.YENIDEN_ACMA_GUN} günden fazla geçti; "
+                                     "lütfen yeni bir talep oluşturun.")
+        z = simdi().isoformat()
+        con.execute("UPDATE talepler SET durum='Yeni', birime_gelis=?, sonuclanma=NULL, puan=NULL, "
+                    "degerlendirme='', birim_gordu=NULL WHERE id=?", (z, talep_id))
+        olay_ekle(con, talep_id, "yeniden_acildi", "Talep sahibi talebi yeniden açtı", gerekce, kullanici["ad"])
+        goruldu(con, talep_id, kullanici)
         return talep_detayi(con, talep_id)
 
 
@@ -728,7 +920,13 @@ def istatistik(kullanici: dict = Depends(rol_gerekli("personel"))):
             "SELECT COUNT(*), COALESCE(SUM(1 - emin), 0) FROM asistan_sayaci WHERE zaman >= ?", (bugun,)
         ).fetchone()
         birim = dict(birim_getir(con, kullanici["birim_id"]))
+        son30 = (simdi() - dt.timedelta(days=30)).isoformat()
+        yeniden_acilan = con.execute(
+            "SELECT COUNT(*) FROM olaylar o JOIN talepler t ON t.id = o.talep_id "
+            "WHERE t.birim_id=? AND o.tur='yeniden_acildi' AND o.zaman >= ?",
+            (kullanici["birim_id"], son30)).fetchone()[0]
     acik = [t for t in talepler if t["durum"] != "Sonuçlandı"]
+    puanlar = [t["puan"] for t in talepler if t["puan"]]
     return {
         "birim": birim,
         "acik": len(acik),
@@ -738,6 +936,10 @@ def istatistik(kullanici: dict = Depends(rol_gerekli("personel"))):
         "akademisyen_talebi": sum(t["talep_eden_rol"] == "akademisyen" for t in acik),
         "asistan_bugun": asistan_bugun[0],
         "asistan_emin_degil": asistan_bugun[1],
+        "yeni_hareket": sum(t["birimde_yeni"] for t in acik),
+        "memnuniyet_ort": round(sum(puanlar) / len(puanlar), 1) if puanlar else None,
+        "memnuniyet_sayi": len(puanlar),
+        "yeniden_acilan_30g": yeniden_acilan,
     }
 
 
@@ -767,9 +969,11 @@ def asistan_durumu():
 
 @app.post("/api/demo/sifirla")
 def demo_sifirla(kullanici: dict = Depends(rol_gerekli("personel"))):
-    """Sunum provalarından sonra örnek verilere geri dönmek için (oturumlar da silinir)."""
+    """Sunum provalarından sonra örnek verilere geri dönmek için (oturumlar da silinir).
+    Sadece DEMO_MODU açıkken çalışır; gerçek kullanımda (DEMO_MODU=false) veriler asla silinemez."""
     if not ayarlar.DEMO_MODU:
         raise HTTPException(403, "Demo modu kapalıyken veriler sıfırlanamaz.")
+    log.warning("Demo verisi sıfırlandı (isteyen: %s).", kullanici["eposta"])
     kur(sifirla=True)
     return {"tamam": True}
 

@@ -6,8 +6,9 @@ Nasıl çalışır? (Bu yönteme RAG denir: "bul, sonra cevapla")
   2. Soru gelince en ilgili maddeler basit bir kelime eşleştirmesiyle bulunur.
   3. Bu maddeler ve soru yapay zekâ modeline (Ollama üzerinden Qwen) verilir.
      Modelden SADECE bu maddelere dayanarak cevap vermesi istenir.
-  4. İlgili madde yoksa veya model emin değilse asistan uydurmaz;
-     "emin değilim" der ve soruyu doğru birime talep olarak iletmeyi önerir.
+  4. İlgili madde yoksa, en iyi madde sorunun tamamını karşılamıyorsa (ör. soru iki ayrı konuyu
+     birleştiriyorsa) veya model emin değilse asistan uydurmaz; "emin değilim" der ve soruyu
+     doğru birime talep olarak iletmeyi önerir.
 
 Model tamamen yerelde çalışır: Ollama servisi aynı docker compose içindedir ve model
 ağırlıkları Docker imajı derlenirken indirilir. Hiçbir bulut yapay zekâ API'si çağrılmaz.
@@ -43,6 +44,7 @@ miyim mıyım muyum müyüm misin mısın merhaba lütfen teşekkürler öğrenc
 söyler söyle söyleyebilir anlat anlatır anlatabilir misiniz musun müsün hakkında bilgi
 nedir neler nelerdir ister istiyor istersem gerek gerekli şey şeyler hangisi kaç
 gtü gebze teknik ise olarak eğer mi
+alabilirim alınır alınabilir nereden yapmalıyım yapılmalı zaman olmalı olmalıyım edilir edilmeli
 """.split())
 
 # Talebi hangi birime yönlendireceğimizi belirleyen anahtar kelimeler (sıra önemli).
@@ -53,7 +55,7 @@ YONLENDIRME = {
     "ogrenci": [
         (["yurt", "barınma", "pansiyon", "yatak"], "Barınma Birimi"),
         (["harç", "iade", "ödeme", "dekont", "borç"], "Strateji Geliştirme"),
-        (["intibak", "muafiyet", "yatay", "yönetim kurulu", "ders içerik"], "Fakülte Sekreterliği"),
+        (["intibak", "muafiyet", "staj", "yönetim kurulu", "ders içerik"], "Fakülte Sekreterliği"),
         (BILGI_ISLEM_KELIMELERI, "Bilgi İşlem"),
     ],
     "akademisyen": [
@@ -100,11 +102,18 @@ def eslesir(a: str, b: str) -> bool:
 
 
 def yonlendir(metin: str, rol: str = "ogrenci") -> str:
-    """Konuya ve talep edenin rolüne göre talebin gideceği birimi tahmin eder."""
+    """Konuya ve talep edenin rolüne göre talebin gideceği birimi tahmin eder.
+    1) Açık anahtar kelime kuralları (ör. "harç" -> Strateji Geliştirme),
+    2) yoksa yönetmeliklerde GÜÇLÜ bir eşleşme varsa o maddenin birimi (asistanın kaynak gösterdiği
+       madde ile talebin gittiği birim aynı olsun diye),
+    3) o da yoksa rolün varsayılan birimi."""
     m = kucult(metin) + " "
     for kelimeler, birim in YONLENDIRME.get(rol, []):
         if any(k in m for k in kelimeler):
             return birim
+    sonuc = ara_puanli(metin, rol, adet=1)
+    if sonuc and sonuc[0]["guclu"]:
+        return sonuc[0]["parca"]["birim"]
     return VARSAYILAN_BIRIM.get(rol, "Öğrenci İşleri")
 
 
@@ -132,7 +141,8 @@ def yonetmelikleri_yukle() -> list[dict]:
         for blok in bloklar[1:]:
             blok = blok.strip()
             ilk_satir = blok.splitlines()[0]
-            madde = ilk_satir.split("–")[0].split("-")[0].strip()
+            # "Madde 19 – Yarıyıl izni (kayıt dondurma) (bölüm 1/2)" -> "Madde 19 – Yarıyıl izni (kayıt dondurma)"
+            madde = re.sub(r"\s*\(bölüm \d+/\d+\)\s*$", "", ilk_satir).strip()
             parcalar.append({
                 "metin": blok,
                 "kaynak": f"{baslik}, {madde}",
@@ -175,6 +185,7 @@ ES_ANLAMLI = {
     "mezun": ["mezuni", "diplom"], "diplom": ["mezuni"],
     "transk": ["not", "transk"], "hazırl": ["ingili", "hazırl"],
     "yaz": ["yaz"], "çap": ["çift"], "çift": ["çift"],
+    "sınırı": ["devam", "fazla", "azami"], "sınır": ["devam", "fazla", "azami"],
 }
 
 
@@ -189,22 +200,40 @@ def agirlik(kok: str) -> float:
     return max(0.3, math.log((_N + 1) / (adet + 0.5)))
 
 
-def ara(soru: str, rol: str = "ogrenci", adet: int = 3) -> list[dict]:
-    """Soruyla en ilgili maddeleri döndürür (sadece bu rolün görebileceği metinlerden).
-    Sorudaki kelimelerin ağırlık toplamının en az %40'ı bir maddede karşılanmıyorsa
-    'bulunamadı' sayılır; asistan uydurmasın diye. Sıralamada kelimenin maddede kaç kez
-    geçtiği ve madde başlığında olup olmadığı da hesaba katılır."""
+# Bir maddenin soruyu "güçlü" karşılaması için: sorudaki, yönetmeliklerde geçen (bilinen) kelimelerin
+# ağırlıkça en az bu oranı AYNI maddede bulunmalı ve belirleyici (ağır) bir bilinen kelime eksik olmamalı.
+# Örnek: "Bursum kesilirse yurt ücreti değişir mi?" -> en iyi madde bursu anlatıyor ama "yurt" ve "ücret"
+# o maddede yok. Soru iki konuyu birleştiriyor; asistan "emin değilim" der ve personele iletmeyi önerir.
+# Yönetmeliklerde hiç geçmeyen kelimelerden ("kantin", "vegan") birden fazlası varsa soru büyük
+# ihtimalle metinlerin konusu dışındadır; tek bir eşleşen kelime ("yemek") yüzünden "emin" denmez.
+GUCLU_ESIK = 0.60
+BELIRLEYICI_AGIRLIK = 2.0
+EN_FAZLA_BILINMEYEN = 1
+
+
+def ara_puanli(soru: str, rol: str = "ogrenci", adet: int = 3) -> list[dict]:
+    """Soruyla en ilgili maddeleri puanlarıyla döndürür (sadece bu rolün görebileceği metinlerden).
+    Her sonuç: {"parca", "sira", "kapsam", "guclu", "eksik"}.
+    - kapsam: sorudaki kelimelerin ağırlıkça ne kadarı maddede karşılandı (0-1).
+    - guclu: madde soruyu tek başına karşılıyor mu (bkz. GUCLU_ESIK, EN_FAZLA_BILINMEYEN).
+    - eksik: maddede karşılanmayan, yönetmeliklerde geçen belirleyici kelimeler.
+    Kapsam %40'ın altındaysa madde hiç listelenmez; asistan uydurmasın diye. Sıralamada kelimenin
+    maddede kaç kez geçtiği ve madde başlığında olup olmadığı da hesaba katılır."""
     soru_kokleri = list(dict.fromkeys(kokler(soru)))
     if not soru_kokleri:
         return []
     agirliklar = {s: agirlik(s) for s in soru_kokleri}
+    bilinen = {s for s in soru_kokleri if _AILE.get(s[:4])}
+    bilinmeyen_sayisi = len(soru_kokleri) - len(bilinen)
     esler = {s: es_anlamlilar(s) for s in soru_kokleri}
     toplam = sum(agirliklar.values())
+    bilinen_toplam = sum(agirliklar[s] for s in bilinen)
     puanli = []
     for p in PARCALAR:
         if p["kitle"] not in ("ortak", rol):
             continue
-        kapsam = sira = 0.0
+        kapsam = sira = bilinen_kapsam = 0.0
+        eksik = []
         for s, a in agirliklar.items():
             guc, tekrar = 0.0, 0
             adaylar = [(s, 1.0)] + [(x, 0.8) for x in esler[s]]
@@ -218,21 +247,45 @@ def ara(soru: str, rol: str = "ogrenci", adet: int = 3) -> list[dict]:
                 baslikta = any(benzerlik(aday, x) >= 1.0 for aday, _ in adaylar for x in p["baslik_kokleri"])
                 kapsam += a * guc
                 sira += a * guc * (1.5 if baslikta else 1.0) * (1 + 0.35 * math.log(1 + tekrar))
+                if s in bilinen:
+                    bilinen_kapsam += a * guc
+            # Kısmi kök eşleşmesi (ör. "unuttum" ~ "unutan", 0.4) eksik sayılmaz ama kapsama az katkı verir
+            if guc < 0.4 and s in bilinen and a >= BELIRLEYICI_AGIRLIK:
+                eksik.append(s)
         if kapsam >= 0.40 * toplam:
-            puanli.append((sira, p))
-    puanli.sort(key=lambda x: x[0], reverse=True)
-    return [p for _, p in puanli[:adet]]
+            oran = bilinen_kapsam / bilinen_toplam if bilinen_toplam else 0.0
+            # Kısa sorularda (en fazla 2 bilinen kelime) hepsi karşılanmalı:
+            # "Yurt başvurusu" sorusu "Yurt içi görevlendirme" maddesine sadece "yurt" ile bağlanmasın.
+            esik = 0.78 if len(bilinen) <= 2 else GUCLU_ESIK  # eş anlamlı eşleşme (0.8) yeterli
+            puanli.append({
+                "parca": p, "sira": sira, "kapsam": round(kapsam / toplam, 3),
+                "guclu": oran >= esik and not eksik and bilinmeyen_sayisi <= EN_FAZLA_BILINMEYEN,
+                "eksik": eksik,
+            })
+    puanli.sort(key=lambda x: x["sira"], reverse=True)
+    return puanli[:adet]
+
+
+def ara(soru: str, rol: str = "ogrenci", adet: int = 3) -> list[dict]:
+    """Geriye uyumluluk için: sadece maddeleri döndürür."""
+    return [x["parca"] for x in ara_puanli(soru, rol, adet)]
+
+
+def kaynaklari_topla(parcalar: list[dict]) -> list[str]:
+    """Aynı maddenin bölümleri tek kaynak olarak gösterilir."""
+    return list(dict.fromkeys(p["kaynak"] for p in parcalar))
 
 
 # ---------------------------------------------------------------------------
 # Yapay zekâ modeli
 # ---------------------------------------------------------------------------
 SISTEM_MESAJI = """Sen Gebze Teknik Üniversitesi'nin öğrenci işleri asistanı Gishe'sin.
-Görevin, kullanıcının sorusunu YALNIZCA sana verilen yönetmelik, yönerge ve bilgi metinlerine dayanarak cevaplamak.
+Görevin, kullanıcının sorusunu YALNIZCA sana verilen numaralı yönetmelik, yönerge ve bilgi metinlerine dayanarak cevaplamak.
 Kurallar:
 - Kısa, net ve samimi Türkçe kullan (en fazla 5 cümle). Sayıları, süreleri ve koşulları metindeki gibi aynen ver.
 - Metinlerde olmayan hiçbir bilgiyi ekleme, tahmin yürütme, genel bilgi verme.
 - Metin soruyu kısmen cevaplıyorsa, bildiğin kısmı söyle ve gerisi için ilgili birime başvurulmasını öner.
+- Cevabın en sonuna, dayandığın metinlerin numaralarını köşeli parantezle yaz. Örnek: [1] veya [1][3]
 - Soru bu metinlerle hiç cevaplanamıyorsa yalnızca BILMIYORUM yaz."""
 
 
@@ -276,7 +329,7 @@ def modeli_hazirla():
 
 
 def modele_sor(soru: str, parcalar: list[dict]) -> str:
-    maddeler = "\n\n".join(f"[{p['kaynak']}]\n{p['metin']}" for p in parcalar)
+    maddeler = "\n\n".join(f"[{i}] {p['kaynak']}\n{p['metin']}" for i, p in enumerate(parcalar, 1))
     yanit = httpx.post(
         f"{OLLAMA_URL}/api/chat",
         json={
@@ -296,12 +349,24 @@ def modele_sor(soru: str, parcalar: list[dict]) -> str:
     return yanit.json()["message"]["content"].strip()
 
 
-def emin_degilim(soru: str, rol: str) -> dict:
+def kaynak_ayikla(cevap: str, parcalar: list[dict]) -> tuple[str, list[str]]:
+    """Modelin cevabın sonuna yazdığı [1][3] gibi numaraları okuyup metinden siler.
+    Model numara yazmadıysa (küçük modeller bazen unutur) verilen tüm maddeler kaynak sayılır."""
+    numaralar = [int(n) for n in re.findall(r"\[(\d)\]", cevap) if 1 <= int(n) <= len(parcalar)]
+    temiz = re.sub(r"\s*(\[\d\]\s*)+", " ", cevap).strip()
+    secilen = [parcalar[n - 1] for n in dict.fromkeys(numaralar)] or parcalar
+    return temiz, kaynaklari_topla(secilen)
+
+
+def emin_degilim(soru: str, rol: str, ilgili: list[dict] | None = None) -> dict:
     birim = yonlendir(soru, rol)
     return {
         "cevap": ("Bu konuda yönetmeliklerde net bir hüküm bulamadım. Yanlış bilgi vermemek için "
                   f"sorunu ilgili birime ({birim}) iletebilirim; yanıtı Taleplerim'de görürsün."),
         "kaynak": None,
+        "kaynaklar": [],
+        # Soruyu tam karşılamasa da göz atılabilecek maddeler (kaynak olarak SUNULMAZ)
+        "ilgili": kaynaklari_topla(ilgili or [])[:2],
         "emin": False,
         "birim": birim,
         "kip": "bulunamadi",
@@ -309,25 +374,35 @@ def emin_degilim(soru: str, rol: str) -> dict:
 
 
 def cevapla(soru: str, rol: str = "ogrenci") -> dict:
-    parcalar = ara(soru, rol)
-    if not parcalar:
+    sonuclar = ara_puanli(soru, rol)
+    parcalar = [x["parca"] for x in sonuclar]
+    if not sonuclar:
         return emin_degilim(soru, rol)
+    en_iyi = sonuclar[0]
+    # Madde soruyu tam karşılamıyorsa "Personele ilet" doğru birime gitsin
+    birim = en_iyi["parca"]["birim"] if en_iyi["guclu"] else yonlendir(soru, rol)
 
-    en_iyi = parcalar[0]
     if DURUM["hazir"]:
         try:
             cevap = modele_sor(soru, parcalar)
             if not cevap or "bilmiyorum" in kucult(cevap).replace("ı", "i"):
-                return emin_degilim(soru, rol)
-            return {"cevap": cevap, "kaynak": en_iyi["kaynak"], "emin": True,
-                    "birim": en_iyi["birim"], "kip": "yapay_zeka"}
+                return emin_degilim(soru, rol, parcalar)
+            metin, kaynaklar = kaynak_ayikla(cevap, parcalar)
+            # Model cevap verse bile tek bir madde soruyu tam karşılamıyorsa kullanıcı uyarılır
+            return {"cevap": metin, "kaynak": kaynaklar[0], "kaynaklar": kaynaklar, "ilgili": [],
+                    "emin": en_iyi["guclu"], "birim": birim, "kip": "yapay_zeka"}
         except Exception as hata:
             log.warning("Model cevap veremedi, yedek moda geçildi: %s", hata)  # soru metni loglanmaz (KVKK)
 
+    # Yedek mod: model yok. Madde ancak soruyu güçlü karşılıyorsa "cevap" olarak gösterilir.
+    if not en_iyi["guclu"]:
+        return emin_degilim(soru, rol, parcalar)
     return {
-        "cevap": "Sorunla en ilgili yönetmelik maddesi:\n\n" + en_iyi["metin"],
-        "kaynak": en_iyi["kaynak"],
+        "cevap": "Sorunla en ilgili yönetmelik maddesi:\n\n" + en_iyi["parca"]["metin"],
+        "kaynak": en_iyi["parca"]["kaynak"],
+        "kaynaklar": [en_iyi["parca"]["kaynak"]],
+        "ilgili": [],
         "emin": True,
-        "birim": en_iyi["birim"],
+        "birim": birim,
         "kip": "yedek",
     }

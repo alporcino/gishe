@@ -56,7 +56,44 @@ OTURUM_SAAT = _sayi("OTURUM_SAAT", 12, 1, 24 * 7)
 GUVENLI_CEREZ = _evet_hayir("GUVENLI_CEREZ", False)  # HTTPS arkasında yayınlanırsa true yapılmalı
 
 # Demo modu: giriş ekranında örnek hesaplar listelenir ve şifresiz demo girişi açılır.
-# Gerçek kullanımda DEMO_MODU=false yapılır.
-DEMO_MODU = _evet_hayir("DEMO_MODU", True)
+# GÜVENLİ VARSAYILAN: kapalı. Sunum için docker-compose.yml bunu açar (DEMO_MODU=true);
+# uygulama başka bir yolla kurulursa demo girişi kendiliğinden açık OLMAZ.
+DEMO_MODU = _evet_hayir("DEMO_MODU", False)
 # Demo hesaplarının şifresi depoda yazmaz. .env'de verilmezse her kurulumda rastgele üretilir.
 DEMO_SIFRE = os.getenv("DEMO_SIFRE", "").strip() or None
+
+# Giriş denemesi sınırı: bir hesaba bu süre içinde bu kadar hatalı şifre girilirse hesap geçici olarak kilitlenir
+GIRIS_DENEME_SINIRI = int(_sayi("GIRIS_DENEME_SINIRI", 10, 3, 100))
+GIRIS_KILIT_DAKIKA = int(_sayi("GIRIS_KILIT_DAKIKA", 15, 1, 24 * 60))
+
+
+def _tarih_listesi(ad: str) -> list[str]:
+    import datetime as dt
+    gecerli = []
+    for x in _liste(ad, ""):
+        try:
+            dt.date.fromisoformat(x)
+            gecerli.append(x)
+        except ValueError:
+            log.warning("%s içinde hatalı tarih: '%s' (YYYY-AA-GG olmalı); yok sayıldı.", ad, x)
+    return gecerli
+
+
+# Resmî tatillere ek olarak iş günü sayılmayacak günler (idari izin vb.), virgülle: 2026-10-30,2027-05-20
+EK_TATILLER = _tarih_listesi("EK_TATILLER")
+
+# ---- E-posta bildirimi (isteğe bağlı). SMTP_SUNUCU boşsa e-posta gönderilmez; uygulama içi işaretler yine çalışır.
+SMTP_SUNUCU = _metin("SMTP_SUNUCU", "")
+SMTP_PORT = int(_sayi("SMTP_PORT", 587, 1, 65535))
+SMTP_KULLANICI = _metin("SMTP_KULLANICI", "")
+SMTP_SIFRE = os.getenv("SMTP_SIFRE", "")
+SMTP_GONDEREN = _metin("SMTP_GONDEREN", SMTP_KULLANICI or "gishe@localhost")
+SMTP_GUVENLIK = _metin("SMTP_GUVENLIK", "starttls").lower()  # starttls | ssl | yok
+if SMTP_GUVENLIK not in ("starttls", "ssl", "yok"):
+    log.warning("SMTP_GUVENLIK 'starttls', 'ssl' veya 'yok' olmalı ('%s' verildi); starttls kullanılıyor.", SMTP_GUVENLIK)
+    SMTP_GUVENLIK = "starttls"
+# E-postadaki bağlantı: kullanıcıların uygulamayı açtığı adres
+UYGULAMA_URL = _metin("UYGULAMA_URL", "http://localhost:3000").rstrip("/")
+
+# Sonuçlanan bir talebi talep sahibi kaç gün içinde "çözülmedi" diyerek yeniden açabilir
+YENIDEN_ACMA_GUN = int(_sayi("YENIDEN_ACMA_GUN", 30, 1, 365))
