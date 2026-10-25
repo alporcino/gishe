@@ -1,0 +1,615 @@
+# Gishe – Sık sorulan sorular (SSS)
+#
+# Öğrencilerin ve akademisyenlerin en sık sorduğu sorular için yönetmelik maddelerinden yazılmış hazır cevaplar.
+# Soru bu listedeki bir soruya yeterince benziyorsa asistan cevabı yapay zekâya ürettirmeden buradan verir:
+# anında gelir, her seferinde aynıdır ve kaynağı bellidir. Listede olmayan sorular yapay zekâ ile cevaplanır.
+#
+# Biçim (bloklar boş satırla ayrılır):
+#   S: soru (aynı sorunun farklı söylenişleri için birden fazla S satırı yazılır)
+#   C: cevap (birden fazla C satırı birleştirilir)
+#   K: kaynak – backend/yonetmelikler içindeki bir maddenin başlığında geçen metin (birden fazla olabilir).
+#      Kaynağı bulunamayan cevap YÜKLENMEZ: her cevabın bir yönetmelik maddesine dayanması zorunludur.
+#   R: ogrenci | akademisyen  (kimin asistanında görüneceği; yazılmazsa kaynağın kitlesi kullanılır)
+#   T: yonlendir  (kaynağı olmayan, sadece doğru yere yönlendiren cevaplar için; B: ile birim verilir)
+#
+# Gerçek kullanımda bu cevaplar Öğrenci İşleri tarafından gözden geçirilip onaylanmalıdır.
+
+# ------------------------------------------------------------------ Kayıt dondurma
+S: Kaydımı nasıl dondururum?
+S: Kayıt dondurmak için ne gerekiyor?
+S: Kayıt dondurmak istiyorum
+S: Bir dönem okula ara vermek istiyorum
+S: Yarıyıl izni nasıl alınır?
+S: Askerlik yüzünden kaydımı dondurabilir miyim?
+S: Sağlık sorunum var, bir dönem izin alabilir miyim?
+S: Maddi sıkıntı yüzünden okula ara verebilir miyim?
+S: Kaç dönem kayıt dondurabilirim?
+S: Kayıt dondurma başvurusu ne zamana kadar yapılır?
+S: Dondurduğum dönem okuma süremden sayılır mı?
+C: Kayıt dondurmanın yönetmelikteki adı "yarıyıl izni"dir. Sağlık, askerlik, başka bir yükseköğretim kurumunda eğitim, maddi, ailevi veya olağan dışı bir durumun varsa fakülte yönetim kurulu kararıyla bir seferde en fazla iki yarıyıl, toplamda en fazla dört yarıyıl izin alabilirsin.
+C: Başvuruyu en geç ilgili yarıyılın ders ekleme-bırakma süresi bitene kadar yapmalısın; gerekçen bu süreden sonra ortaya çıktıysa sonradan da başvurabilirsin. İzinli geçen süre öğretim süresinden sayılmaz.
+K: Eğitim-Öğretim Yönetmeliği, Madde 19 –
+
+# ------------------------------------------------------------------ Devam
+S: Devamsızlık sınırı nedir?
+S: Devamsızlık hakkım ne kadar?
+S: Kaç hafta devamsızlık yapabilirim?
+S: Derslere devam zorunlu mu?
+S: Yoklama kaç ders?
+S: Laboratuvar dersinde yüzde kaç devam şart?
+S: Devamsızlıktan kalırsam ne olur?
+S: Devamsızlıktan kalırsam finale girebilir miyim?
+C: Teorik derslerde en az %70, laboratuvar ve uygulamalı derslerde en az %80 devam zorunludur. Yani teorik bir dersin en fazla %30'una, uygulamalı bir dersin en fazla %20'sine katılmayabilirsin.
+C: Devam şartını sağlamazsan NA (devamsız-başarısız) notu alırsın ve o dersin yarıyıl sonu sınavına da D sınavına da giremezsin.
+K: Eğitim-Öğretim Yönetmeliği, Madde 23 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 25 –
+
+S: NA notu ne demek?
+S: VF notu nedir?
+S: NA ile VF arasındaki fark ne?
+C: NA (devamsız-başarısız), derslere devamı yetersiz olan öğrenciye verilir. VF (yetersiz-başarısız) ise devam şartını sağladığı hâlde ders bilgi formundaki asgari yükümlülükleri yerine getirmeyen öğrenciye verilir.
+C: İkisi de başarısızlık sayılır ve 4'lük sistemde 0'dır. NA veya VF alan öğrenci o dersin yarıyıl sonu sınavına ve D sınavına giremez.
+K: Eğitim-Öğretim Yönetmeliği, Madde 26 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 25 –
+
+# ------------------------------------------------------------------ Kredi yükü
+S: Bir dönemde en fazla kaç AKTS alabilirim?
+S: Kaç kredi ders alabilirim?
+S: En az kaç AKTS almam lazım?
+S: Kredi yükümü artırabilir miyim?
+S: 40 AKTS ders alabilir miyim?
+S: Ortalamam düşük, kaç kredi alabilirim?
+S: Çift ana dal yaparken kaç AKTS alabilirim?
+S: Azami kredi yükü ne kadar?
+C: Lisans öğrencileri bir yarıyılda en az 20, en fazla 35 AKTS ders alır; çift ana dal veya yan dal yapanlar için üst sınır toplam 50 AKTS'dir. Birinci ve ikinci yarıyıldaysan öğretim planındaki olağan kredi yükünü aşamazsın.
+C: İkinci yarıyıldan sonra ağırlıklı genel not ortalaman 1,99 veya altındaysa en fazla 30 AKTS alabilirsin. Ortalaman en az 2,50 ise (ya da en az 2,00 olup 160 AKTS'yi tamamladıysan) danışmanının onayıyla üst sınır 40 AKTS'ye çıkarılabilir.
+K: Eğitim-Öğretim Yönetmeliği, Madde 16 –
+
+# ------------------------------------------------------------------ Ders ekleme-çıkarma
+S: Dersi bırakabilir miyim?
+S: Ders ekleme çıkarma ne zaman?
+S: Add drop haftası ne zaman?
+S: Bir dersten çekilmek istiyorum
+S: Ders bırakma nasıl yapılır?
+S: Sonradan ders ekleyebilir miyim?
+C: Ders ekleme ve çıkarma (bırakma), akademik takvimde belirtilen ders ekleme-çıkarma günlerinde yapılır. Bunun için danışmanının onayı gerekir; ayrıca kredi yükü sınırlarına ve dersin ön şart/eş şart koşullarına uyman, haftalık ders programında çakışma olmaması gerekir.
+K: Eğitim-Öğretim Yönetmeliği, Madde 17 –
+
+# ------------------------------------------------------------------ Sınavlar
+S: Hastaydım, sınava giremedim ne yapmalıyım?
+S: Rapor aldım, vizeye giremedim
+S: Mazeret sınavı için kaç gün içinde başvurmalıyım?
+S: Sınava giremedim, mazeret sınavı var mı?
+S: Final sınavına giremedim
+S: Mazeret sınavına nasıl başvurulur?
+C: Haklı ve geçerli bir nedenle sınavına giremediysen mazeret sınavı hakkı isteyebilirsin. Bunun için sınav tarihinden itibaren 5 iş günü içinde mazeret dilekçeni kayıtlı olduğun bölüm başkanlığına teslim etmelisin.
+C: Mazeretin ilgili yönetim kurulunca kabul edilirse sınav aynı yarıyıl içinde, dersin öğretim elemanının belirlediği gün ve saatte yapılır. D sınavının mazeret sınavı yoktur.
+K: Eğitim-Öğretim Yönetmeliği, Madde 29 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 25 –
+
+S: Finale girmezsem ne olur?
+S: Yarıyıl sonu sınavına girmezsem ne olur?
+C: Derse devam şartını sağladığın hâlde yarıyıl sonu (final) sınavına girmezsen, dönem içindeki başarına bakılmaksızın FF notu alırsın.
+C: Haklı ve geçerli bir mazeretin varsa sınav tarihinden itibaren 5 iş günü içinde bölüm başkanlığına mazeret dilekçesi vererek mazeret sınavı isteyebilirsin.
+K: Eğitim-Öğretim Yönetmeliği, Madde 24 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 29 –
+
+S: Bütünleme sınavı var mı?
+S: Büt sınavı ne zaman?
+S: D sınavı nedir?
+S: FF aldım ne yapabilirim?
+S: FF aldım, D sınavına girebilir miyim?
+C: Yönetmelikte "bütünleme" yerine D sınavı vardır. Yarıyıl sonu sınavına girdiğin bir dersten FF alırsan, akademik takvimde belirtilen zamanda D sınavına girebilirsin. D sınavında başarılı olursan notun DD olur; girmezsen ya da başarılı olamazsan FF kalır.
+C: Staj, laboratuvar, proje ve bitirme çalışması gibi derslerde D sınavı yapılmaz; VF veya NA alanlar da D sınavına giremez. D sınavının mazeret sınavı yoktur. Dersten yine başarısız olursan dersi ilk açıldığı dönemde tekrar alman gerekir.
+K: Eğitim-Öğretim Yönetmeliği, Madde 25 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 32 –
+
+S: Resmi tatilde sınav yapılır mı?
+S: Hafta sonu sınav olur mu?
+C: Resmî tatil günlerinde sınav yapılmaz. Ancak gerektiğinde, ilgili yönetim kurulunun uygun gördüğü derslerin sınavları mesai saatleri dışında veya cumartesi ve pazar günleri yapılabilir.
+K: Eğitim-Öğretim Yönetmeliği, Madde 25 –
+
+S: Notuma itiraz etmek istiyorum
+S: Hoca notumu yanlış girmiş
+S: Vize notuma kaç gün içinde itiraz edebilirim?
+S: Sınav sonucuma nasıl itiraz ederim?
+S: Harf notuma itiraz edebilir miyim?
+S: Yazılı sınav sonucuma itiraz edebilir miyim?
+C: Hem yarıyıl içi sınav notlarına hem de dönem sonu harf notuna, notun ilan edildiği tarihten itibaren 5 iş günü içinde ilgili bölüm başkanlığına yazılı olarak başvurarak itiraz edebilirsin.
+C: Bölüm başkanlığı itirazı dersin öğretim elemanına iletir; öğretim elemanı sınav belgelerini yeniden inceleyip 5 iş günü içinde sonucu bildirir. Not değişikliği varsa ilgili yönetim kurulu karara bağlar.
+K: Eğitim-Öğretim Yönetmeliği, Madde 28 –
+
+# ------------------------------------------------------------------ Notlar ve ortalama
+S: Dersi geçmek için kaç almam lazım?
+S: DD ile dersi geçer miyim?
+S: DC geçer not mu?
+S: CC aldım, geçtim mi?
+S: Şartlı geçme nedir?
+S: Geçme notu kaç?
+C: Bir dersi başarıyla tamamlamak için o dersten CC veya üstü (ya da S) alman gerekir. Dönem sonundaki ağırlıklı genel not ortalaman en az 2,00 ise o dönem aldığın DD ve DC notları da başarılı sayılır; ancak Senato bazı dersler için DD ve DC'yi başarısız kabul edebilir.
+C: FF, VF, NA ve U başarısızlık anlamına gelir.
+K: Eğitim-Öğretim Yönetmeliği, Madde 27 –
+
+S: Harf notlarının karşılıkları nedir?
+S: BA kaç puan?
+S: AA BA BB notları kaç eder?
+S: 4'lük sistemde notlar nedir?
+S: CB kaç eder?
+C: Başarı notları ve 4'lük sistemdeki karşılıkları: AA = 4,00 (Pekiyi), BA = 3,50 (İyi-Pekiyi), BB = 3,00 (İyi), CB = 2,50 (Orta-İyi), CC = 2,00 (Orta), DC = 1,50 (Orta-Zayıf), DD = 1,00 (Zayıf), FF = 0 (Başarısız).
+C: VF ve NA da 0 sayılır. EX (muaf), NC (kredisiz), S (yeterli) ve U (yetersiz) notlu dersler not ortalamasının hesabına katılmaz.
+K: Eğitim-Öğretim Yönetmeliği, Madde 26 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 30 –
+
+S: Not ortalaması nasıl hesaplanır?
+S: GANO nasıl hesaplanıyor?
+S: AGNO hesaplama
+S: Dönem ortalaması nasıl bulunur?
+C: Ağırlıklı genel not ortalaması (AGNO), aldığın tüm derslerin kredileri ile 4'lük sistemdeki notlarının çarpımları toplanıp kredilerin toplamına bölünerek bulunur; dönem ortalaması aynı yöntemle sadece o dönemin dersleriyle hesaplanır. EX, NC, S ve U notlu dersler hesaba katılmaz ve sonuç virgülden sonra iki haneye yuvarlanır.
+C: Örnek: 5 AKTS'lik bir dersten BB (3,00), 3 AKTS'lik bir dersten CC (2,00) aldıysan ortalaman (5×3 + 3×2) / 8 = 2,63 olur.
+K: Eğitim-Öğretim Yönetmeliği, Madde 30 –
+
+S: Onur öğrencisi olmak için ortalama kaç olmalı?
+S: Yüksek onur belgesi kaç ortalama?
+S: Onur listesine nasıl girerim?
+C: Kayıtlı olduğun sekiz dönem içinde mezun olursan, genel not ortalaman 3,00–3,49 arasındaysa onur öğrencisi, 3,50 ve üstündeyse yüksek onur öğrencisi olarak mezun olursun; bu durum transkriptinde belirtilir.
+K: Eğitim-Öğretim Yönetmeliği, Madde 31 –
+
+S: Ortalamam 2'nin altına düştü ne olur?
+S: Sınamalı öğrenci ne demek?
+S: Ortalamam 1,99 ise kaç AKTS alabilirim?
+S: Ortalamam düşükse ne olur?
+C: Lisans programlarında ikinci yarıyılın sonundan itibaren ağırlıklı genel not ortalaması 1,99 veya altında olan öğrenci "sınamalı öğrenci" sayılır ve bir yarıyılda 30 AKTS'den fazla ders alamaz.
+C: Bir yarıyıl sonunda ortalaması 2,00 veya üstü olan öğrenci başarılı sayılır. Mezun olabilmek için de ortalamanın en az 2,00 olması gerekir.
+K: Eğitim-Öğretim Yönetmeliği, Madde 31 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 35 –
+
+# ------------------------------------------------------------------ Ders tekrarı, tek ders
+S: Dersten kaldım
+S: Dersten kalırsam ne olur?
+S: Matematikten kaldım, tekrar almak zorunda mıyım?
+S: Alttan ders nasıl alınır?
+S: Seçmeli dersten kaldım, başka seçmeli alabilir miyim?
+S: Tekrar aldığım derste hangi not geçerli?
+S: Kaldığım dersi tekrar alırken derse devam etmek zorunda mıyım?
+C: FF, VF, NA veya U aldığın dersleri tekrar etmek zorundasın ve bunu dersin ilk açıldığı dönemde yapman gerekir; danışmanın uygun görürse bir sonraki yarıyıla ertelenebilir.
+C: Önceki notun NA veya U ise dersin tüm yükümlülüklerini (devam dahil) yeniden yerine getirirsin; diğer notlarda devam şartı aranmaz ama ders bilgi formundaki diğer yükümlülükler geçerlidir. Seçmeli bir dersten kaldıysan aynı havuzdan başka bir seçmeli alabilirsin. Tekrar edilen derste son alınan not geçerlidir.
+K: Eğitim-Öğretim Yönetmeliği, Madde 32 –
+
+S: Notumu yükseltmek için dersi tekrar alabilir miyim?
+S: Ortalamamı yükseltmek için geçtiğim dersi tekrar alabilir miyim?
+C: Evet. Ağırlıklı genel not ortalamanı yükseltmek için AA dışındaki, daha önce başarılı olduğun dersleri tekrar alabilirsin.
+C: Dikkat: tekrar edilen derste son alınan not geçerlidir; yeni notun eskisinden düşük olursa düşük not sayılır.
+K: Eğitim-Öğretim Yönetmeliği, Madde 32 –
+
+S: Tek dersim kaldı, ne yapabilirim?
+S: Mezuniyete tek ders kaldı
+S: Tek ders sınavına kimler girebilir?
+S: Tek ders sınavı nedir?
+C: Öğretim planındaki (staj dersleri dışındaki) derslerin biri hariç hepsini tamamladıysan, başarısız olduğun o ders için tek ders sınavına girebilirsin. Dilekçeyle başvurursun, karar fakülte yönetim kurulunca verilir ve tek dersi kalan öğrenci bu haktan sınırsız yararlanabilir.
+C: Başarılı olmak için en az CC alman gerekir; ara sınav notu dikkate alınmaz. O dersteki son notun NA olmamalı. Proje, laboratuvar, bitirme çalışması ve staj derslerinde tek ders sınavı yapılmaz.
+K: Eğitim-Öğretim Yönetmeliği, Madde 33 –
+
+# ------------------------------------------------------------------ Mezuniyet, süre, hazırlık
+S: Mezun olmak için şartlar neler?
+S: Mezuniyet için kaç kredi lazım?
+S: Mezun olmak için ortalamam kaç olmalı?
+S: Kaç AKTS ile mezun olunur?
+C: Mezun olabilmek için öğretim planındaki tüm dersleri ve çalışmaları başarıyla tamamlaman (lisans programında en az 240 AKTS), ağırlıklı genel not ortalamanın en az 2,00 olması ve programının toplam kredi yükünün en az yarısını GTÜ'de almış olman gerekir.
+C: Bu koşulları tamamladığında mezuniyet kararın ertelenemez.
+K: Eğitim-Öğretim Yönetmeliği, Madde 35 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 13 –
+
+S: Azami öğrenim süresi kaç yıl?
+S: Okulu en fazla kaç yılda bitirmem lazım?
+S: Okuma süresi kaç yıl?
+S: Lisans kaç yıl sürer?
+C: Lisans programları sekiz yarıyıldır ve azami bitirme süresi yedi yıldır; İngilizce hazırlıkta geçen süre buna dahil değildir. Ön lisans programları dört yarıyıl, azami süresi dört yıldır.
+C: Hazırlık eğitimi en fazla iki yıl sürebilir. İzinli (kayıt dondurulmuş) yarıyıllar öğretim süresinden sayılmaz.
+K: Eğitim-Öğretim Yönetmeliği, Madde 14 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 19 –
+
+S: Hazırlık kaç yıl sürer?
+S: Hazırlığı geçemezsem ne olur?
+S: İngilizce hazırlıktan muaf olabilir miyim?
+S: Hazırlıkta kaldım, ne olacak?
+S: Hazırlık sınıfında iki yıl kalabilir miyim?
+S: Hazırlığı iki yılda bitirebilir miyim?
+S: Hazırlığı tekrar okuyabilir miyim?
+S: İngilizce seviye tespit sınavı nedir?
+C: Kayıt olduğunda İngilizce seviye tespit sınavına alınırsın; Senato'nun eş değer kabul ettiği ulusal veya uluslararası bir sınavda gerekli düzeyde başarılı olduğunu belgelersen bu sınava girmeden bölümüne başlarsın. Başarılı olamazsan İngilizce hazırlığa devam edersin.
+C: Hazırlık eğitimi en fazla iki yıldır. İlk yılın sonunda başarısız olursan hazırlık sınıfına devam hakkın olmaz ama sonraki yılın yeterlik sınavlarına girebilirsin; dört yarıyıl sonunda İngilizce yeterliğini belgeleyemezsen üniversiteyle ilişiğin kesilir. Bu durumda İngilizce öğretimin zorunlu olmadığı bir üniversiteye yerleşmek için ÖSYM'ye başvurabilir veya yatay geçiş yapabilirsin.
+K: Eğitim-Öğretim Yönetmeliği, Madde 5 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 14 –
+
+S: Diplomamı kaybettim
+S: Geçici mezuniyet belgesi alabilir miyim?
+C: İstersen diploman hazırlanana kadar sana geçici mezuniyet belgesi verilir. Diploma veya sertifikanı kaybedersen yenisi hazırlanır ve üzerine "ikinci nüsha" ibaresi konulur.
+K: Eğitim-Öğretim Yönetmeliği, Madde 36 –
+
+S: Bitirme projesini ne zaman alabilirim?
+S: Bitirme çalışması için kaç AKTS gerekli?
+C: Bitirme çalışması lisans programlarında yedinci ve/veya sekizinci yarıyıl dersidir. Bu dersi alabilmek için en az 160 AKTS'yi tamamlamış olman ve ders planındaki ön şart ve eş şart koşullarını sağlaman gerekir.
+C: Mezun olmadan önce bitirme çalışmanı mezun olacağın programdan tamamlaman zorunludur.
+K: Eğitim-Öğretim Yönetmeliği, Madde 18 –
+
+S: 4. sınıfta yüksek lisans dersi alabilir miyim?
+S: Lisansüstü ders alabilir miyim?
+C: Genel not ortalaman en az 3,00 olan bir dördüncü sınıf öğrencisiysen, talep etmen ve danışmanının uygun görmesi hâlinde en fazla iki tane 500 kodlu lisansüstü ders alabilirsin.
+C: Bu dersler fakülte yönetim kurulu kararıyla lisans programındaki seçmeli derslerin yerine sayılırsa, ileride lisansüstü öğretimde tekrar saydırılamaz.
+K: Eğitim-Öğretim Yönetmeliği, Madde 13 –
+
+S: Yönetim kurulu kararına itiraz süresi ne kadar?
+S: Fakülte yönetim kurulu kararına itiraz edebilir miyim?
+C: Hakkında alınan bir yönetim kurulu kararına, kararın sana tebliğ edildiği tarihten itibaren on beş gün içinde Üniversite Yönetim Kuruluna itiraz edebilirsin.
+K: Eğitim-Öğretim Yönetmeliği, Madde 37 –
+
+S: Akademik takvim ne zaman açıklanır?
+S: Akademik takvimi kim belirler?
+S: Bir dönem kaç hafta sürer?
+S: Vize haftası ne zaman?
+S: Final sınavları ne zaman?
+S: Ders kayıtları ne zaman?
+C: Öğretim yılı güz ve bahar yarıyıllarından oluşur; her yarıyılın normal süresi on dört haftadır. Akademik takvim, her akademik yılın başlamasından önce Senato tarafından belirlenip ilan edilir ve gerektiğinde güncellenebilir.
+C: Kayıt, ders ekleme-çıkarma, sınav ve not ilanı gibi tarihler bu takvimde yer alır.
+K: Eğitim-Öğretim Yönetmeliği, Madde 11 –
+
+S: Ön şartlı bir derse kayıt olabilir miyim?
+S: Ön şart nedir?
+C: Bir dersin ön şartı ve eş şartı bölümün önerisi ve Senato kararıyla belirlenir. Ön ve eş şartlarını sağlamadığın derslere kayıt yaptıramazsın.
+K: Eğitim-Öğretim Yönetmeliği, Madde 15 –
+
+S: Danışmanım kim?
+S: Danışman ne işe yarar?
+C: Her öğrenciye Senato'nun yönergesine göre bir danışman atanır ve danışmanlık mezuniyete kadar sürer. Ders ekleme-çıkarma, kredi yükünü artırma ve ders tekrarını erteleme gibi işlemlerde danışmanının onayı gerekir.
+C: Danışmanının kim olduğu bu metinlerde yer almıyor; istersen soruyu Öğrenci İşleri'ne iletebilirim.
+K: Eğitim-Öğretim Yönetmeliği, Madde 8 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 17 –
+
+S: Öğrenci kimlik kartı nasıl alınır?
+S: Öğrenci kartımı kaybettim
+C: Kesin kaydını yaptıran her öğrenciye üniversite tarafından fotoğraflı bir öğrenci kimlik kartı verilir.
+C: Kartın kaybolması hâlinde ne yapılacağı yönetmelikte yazmıyor; bunun için Öğrenci İşleri'ne başvurabilirsin.
+K: Eğitim-Öğretim Yönetmeliği, Madde 9 –
+
+S: Okul e-postamı takip etmek zorunda mıyım?
+S: Tebligat nasıl yapılır?
+C: Evet. Üniversitenin verdiği resmî e-posta adresini aktif tutmak ve e-postalarını düzenli takip etmek zorundasın; tebligatlar bu adrese, öğrenci bilgi sisteminde güncellediğin posta adresine veya fakültede ilan yoluyla yapılır.
+C: E-postanı takip etmediğin için okumadığın tebligatlar da tebliğ edilmiş sayılır.
+K: Eğitim-Öğretim Yönetmeliği, Madde 38 –
+
+# ------------------------------------------------------------------ Kayıt yenileme, katkı payı (harç)
+S: Kayıt yenilemeyi kaçırdım
+S: Ders kaydına geç kaldım, ne yapabilirim?
+S: Kayıt yenileme ne zaman?
+S: Ders seçimini yapamadım
+S: Mazeretli kayıt nasıl yapılır?
+C: Her yarıyıl kaydını akademik takvimdeki tarihlerde yenilemek zorundasın. Yenileyemediysen akademik takvimde belirtilen mazeretli kayıt süresi içinde fakülte dekanlığına başvurursun; mazeretin geçerli görülürse kaydını ders ekleme-çıkarma süresinin sonuna kadar yaptırman gerekir.
+C: Ders kaydı yaptırmadığın yarıyıl da öğretim süresinden sayılır.
+K: Eğitim-Öğretim Yönetmeliği, Madde 10 –
+
+S: Harcı ödemezsem ne olur?
+S: Katkı payı ne zaman ödenir?
+S: Harç ne zaman yatırılır?
+C: Öğrenci katkı payı veya öğrenim ücreti, dönem başlarında akademik takvimde belirtilen tarihlerde ödenir.
+C: Süresinde ödemeyen öğrenci, mazereti ilgili yönetim kurulunca kabul edilmedikçe o dönem kaydını yaptıramaz veya yenileyemez ve öğrencilik haklarından yararlanamaz.
+K: Eğitim-Öğretim Yönetmeliği, Madde 6 –
+
+S: Harç iadesi nasıl alınır?
+S: Yanlışlıkla fazla harç yatırdım
+S: Fazla ödediğim harcı geri alabilir miyim?
+C: Fazla veya yanlış yatırdığın katkı payı ya da öğrenim ücretinin iadesi için ödeme dekontun ve IBAN bilginle Strateji Geliştirme Daire Başkanlığına başvurursun; iade, başvuru onaylandıktan sonra en geç 30 gün içinde yapılır.
+C: Eğitim-öğretim başladıktan sonra üniversiteden ayrılan veya kaydı silinenlerin o yarıyıl ödediği ücret iade edilmez.
+K: Harç ve Ücret İadesi Usulleri, Madde 3 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 6 –
+
+S: Okulu bırakmak istiyorum, ne yapmalıyım?
+S: Kaydımı sildirmek istiyorum
+S: Üniversiteden ayrılmak istiyorum
+S: Okulu bırakırsam diploma alabilir miyim?
+S: Üniversiteden ayrılırsam harcım iade edilir mi?
+C: Kendi isteğinle üniversiteden ayrılmak için Öğrenci İşleri Daire Başkanlığına yazılı olarak başvurursun. Eğitim-öğretim başladıktan sonra ayrılırsan o yarıyıl ödediğin katkı payı veya öğrenim ücreti iade edilmez.
+C: Lisans programının ilk dört yarıyılındaki tüm dersleri başarıyla tamamladıysan ve bu derslerin ortalaması en az 2,00 ise, ayrılırken ön lisans diploması almaya hak kazanırsın.
+K: Eğitim-Öğretim Yönetmeliği, Madde 34 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 6 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 36 –
+
+# ------------------------------------------------------------------ Yatay geçiş
+S: Başka bölüme geçmek istiyorum
+S: Bölüm değiştirmek istiyorum
+S: Kurum içi yatay geçiş şartları neler?
+S: GTÜ içinde bölüm değiştirebilir miyim?
+S: Yatay geçiş için not ortalaması kaç olmalı?
+S: Yatay geçiş şartları neler?
+C: GTÜ içinde başka bir bölüme kurum içi yatay geçişle geçebilirsin. Lisansta bu geçiş üçüncü yarıyıldan başlayıp beşinci yarıyıl dahil yapılır. Başvurabilmek için o güne kadar aldığın tüm derslerden başarılı olman ve ağırlıklı genel not ortalamanın en az 3,5 olması gerekir; ayrıca merkezi yerleştirme puanının, geçmek istediğin programın eş değerlerinin en düşük taban puanından az olmaması şartı aranır.
+C: Başka bir üniversiteye ya da başka bir üniversiteden geçişte de not şartı 4 üzerinden 3,5'tir (100 üzerinden 85). Kontenjanlar ve tarihler üniversitenin internet sayfasında ilan edilir.
+K: Yatay Geçiş Yönergesi, Madde 4 –
+K: Yatay Geçiş Yönergesi, Madde 6 –
+
+S: Başka üniversiteden GTÜ'ye geçiş yapabilir miyim?
+S: Başka üniversiteye yatay geçiş yapmak istiyorum
+S: Kurumlar arası yatay geçiş şartları neler?
+C: Kurumlar arası yatay geçiş, aynı düzeydeki eş değer programlar arasında ve Yükseköğretim Kurulu'nun ilan ettiği kontenjanlarla yapılır; fakültelerde yalnızca üçüncü ve beşinci dönemlere geçilebilir. Bitirdiğin dönemlerdeki tüm derslerinden başarılı olman ve genel not ortalamanın en az 3,5 (100 üzerinden 85) olması gerekir.
+C: Bu şartı sağlamıyorsan ama merkezi yerleştirme puanın geçmek istediğin programın taban puanına eşit veya yüksekse yine başvurabilirsin; bu başvurular boş kontenjan kalırsa değerlendirilir. GTÜ'ye geçmek için ayrıca İngilizce yeterliğini belgelemen ya da Yabancı Diller Bölümü'nün sınavında başarılı olman gerekir.
+K: Yatay Geçiş Yönergesi, Madde 6 –
+
+S: Birinci sınıfta yatay geçiş yapabilir miyim?
+S: Yatay geçiş hangi dönemlerde yapılır?
+S: Son sınıfta yatay geçiş yapılır mı?
+C: Hazırlık sınıfına, lisans programlarının ilk iki yarıyılına ve son iki yarıyılına yatay geçiş yapılamaz. GTÜ içinde bölüm değiştirme (kurum içi geçiş) üçüncü yarıyıldan beşinci yarıyıla kadar (beşinci dahil), başka bir üniversiteden geçiş ise yalnızca üçüncü ve beşinci dönemlere yapılır; yani not ortalamasıyla geçişte en erken üçüncü yarıyıl için başvurabilirsin.
+C: Merkezi yerleştirme puanıyla yapılan yatay geçiş bunun istisnasıdır: puanın, geçmek istediğin programın girdiğin yıldaki taban puanına eşit veya yüksekse hazırlık sınıfı dahil başvurabilirsin.
+K: Yatay Geçiş Yönergesi, Madde 2 –
+K: Yatay Geçiş Yönergesi, Madde 4 –
+K: Yatay Geçiş Yönergesi, Madde 6 –
+
+# ------------------------------------------------------------------ Yan dal
+S: Yan dal başvurusu için GNO şartı nedir?
+S: Yandal yapmak istiyorum
+S: Yan dala ne zaman başvurabilirim?
+S: Yan dal şartları neler?
+C: Yan dal programına ana dalının en erken üçüncü, en geç altıncı yarıyılının başında başvurabilirsin. Başvurduğun yarıyıla kadar aldığın tüm kredili dersleri başarıyla tamamlamış olman ve ana daldaki genel not ortalamanın en az 2,50 olması gerekir.
+C: Başvuru, akademik takvimdeki sürelerde başvuru formu ve transkriptle yan dal kontenjanı açan bölüm başkanlığına yapılır; kabul fakülte yönetim kurulu kararıyla kesinleşir.
+K: Yan Dal Programı Yönergesi, Madde 4 –
+K: Yan Dal Programı Yönergesi, Madde 5 –
+K: Yan Dal Programı Yönergesi, Madde 6 –
+K: Yan Dal Programı Yönergesi, Madde 7 –
+
+S: Yan daldan kalırsam ana dalım etkilenir mi?
+S: Yan dalı bırakabilir miyim?
+S: Aynı anda iki yan dal yapabilir miyim?
+S: Yan dal sertifikası nasıl alınır?
+C: Yan daldaki başarı ya da başarısızlığın ana dal programını ve mezuniyetini hiçbir şekilde etkilemez; yan dal için ayrı transkript düzenlenir. Aynı anda birden fazla yan dal programına kayıt yaptıramazsın.
+C: Yan dalı Öğrenci İşleri Daire Başkanlığına yazılı başvuruyla bırakabilirsin; ancak bıraktığın yan dala tekrar kayıt yaptıramazsın, başarısız olduğun yan dal derslerini de tekrarlamak zorunda kalmazsın. Ana daldan mezun olur ve yan dalı en az 2,00 ortalamayla tamamlarsan yan dal sertifikası alırsın; bu belge diploma yerine geçmez.
+K: Yan Dal Programı Yönergesi, Madde 8 –
+K: Yan Dal Programı Yönergesi, Madde 11 –
+K: Yan Dal Programı Yönergesi, Madde 12 –
+K: Yan Dal Programı Yönergesi, Madde 16 –
+K: Yan Dal Programı Yönergesi, Madde 17 –
+
+# ------------------------------------------------------------------ Staj (Mühendislik Fakültesi)
+S: Staj kaç iş günü?
+S: Zorunlu staj kaç gün?
+S: İlk staj için kaç AKTS gerekiyor?
+S: Staja ne zaman başlayabilirim?
+S: Kaç tane staj yapmam gerekiyor?
+C: Mühendislik Fakültesi'nde zorunlu stajların toplamı en az 40 iş günüdür ve mezuniyet için tamamlanması şarttır. Her staj en az 20 iş günü, tam zamanlı ve ara vermeden yapılır.
+C: Birinci stajı 4. yarıyıldan sonra ve en az 70 AKTS'yi, ikinci stajı 6. yarıyıldan sonra ve en az 120 AKTS'yi tamamlamış olarak yapabilirsin. Staja başvurmak için iki İş Sağlığı ve Güvenliği dersinden de başarılı olmalısın. Diğer fakültelerin staj kuralları kendi yönergelerinde yer alır.
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 9 –
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 8 –
+
+S: Staj yerini kim buluyor?
+S: Staj yeri nasıl bulunur?
+S: Staj başvurusu nasıl yapılır?
+C: Staj yeri bulma sorumluluğu öğrenciye aittir; bulduğun yerin uygun olup olmadığına Bölüm Staj Komisyonu karar verir. Staj yapacağın kurumdan, kabul edildiğini gösteren başlıklı veya kaşeli, tarihli ve stajın adını içeren bir belge alıp Bölüm Staj Komisyonu'na başvurursun.
+C: Kabul edilirsen staja başlamadan önce Staj Fişini ilgili birimlere onaylatman gerekir.
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 8 –
+
+S: Stajı online yapabilir miyim?
+S: Stajı uzaktan yapabilir miyim?
+S: Yarı zamanlı staj yapılır mı?
+C: Hayır, staj çevrim içi (online) yapılamaz. Stajlar tam gün mesai şeklinde yapılır; tam mesaiyi doldurmayan günler staja sayılmaz.
+C: Haftada 5 tam gün staj yapılır; daha az gün veya kısmi mesai şeklinde staj yapılamaz (mezuniyetine en fazla 20 AKTS kalan öğrencilerin dönem içi stajı hariç).
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 8 –
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 9 –
+
+S: Stajda kaç gün devamsızlık yapabilirim?
+S: Staj devamsızlık hakkı ne kadar?
+C: Staj süresince, staj süresinin %10'undan fazla devamsızlık yapamazsın; örneğin 20 iş günlük bir stajda en fazla 2 gün. Resmî tatil günlerinde staj yapılmaz.
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 8 –
+
+S: Staj sigortasını kim yapıyor?
+S: Stajda sigortam yapılıyor mu?
+C: Yurt içinde veya yurt dışında yapılan stajlarda İş Kazası ve Meslek Hastalığı ile Genel Sağlık Sigortası zorunludur. Yurt içi stajı fakültece onaylanan öğrencilerin sigorta işlemleri Mühendislik Fakültesi tarafından yapılır; yurt dışı stajlarında sigorta masrafları dahil her türlü sorumluluk öğrenciye aittir.
+C: SGK girişi yapıldıktan sonra staj tarihi, süresi ve yeri değiştirilemez.
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 8 –
+
+S: Staj raporunu ne zaman teslim etmeliyim?
+S: Staj raporunu nasıl yazmalıyım?
+S: Staj raporu hangi dilde yazılır?
+C: Stajda yaptığın çalışmaları Bölüm Staj Uygulama Esaslarına göre Türkçe veya İngilizce bir staj raporunda anlatırsın; yurt dışı stajlarında rapor İngilizce olur.
+C: Staj yeri yetkilisine onaylattığın raporu en geç stajı izleyen yarıyılın ilk haftasında (dönem içinde biten stajlarda staj bitiminden itibaren 1 hafta içinde) imza karşılığında Bölüm Sekreterliğine veya Bölüm Staj Komisyonu'na teslim edersin. Raporla birlikte değerlendirme anketlerini de teslim etmelisin; belgelerin tamamını teslim etmezsen NA notu alırsın.
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 12 –
+
+S: Yaz okuluna giderken staj yapabilir miyim?
+S: Yazın staj yapabilir miyim?
+S: Staj ne zaman yapılır?
+C: Zorunlu stajlar yarıyıl veya yaz tatiline denk gelen aylarda yapılır; yani yazın staj yapabilirsin. Ancak yaz okuluna kayıtlı olduğun dönemde staj yapamazsın.
+C: Bunun tek istisnası, mezuniyetine stajlar hariç en fazla 20 AKTS kalan öğrencilerin Bölüm Staj Komisyonu onayıyla dönem içinde yaptığı stajdır.
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 9 –
+
+S: Dönem içinde staj yapabilir miyim?
+S: Okul devam ederken staj yapabilir miyim?
+C: Mezuniyetin için stajlar hariç en fazla 20 AKTS'n kaldıysa, Bölüm Staj Komisyonu onayıyla dönem içinde staj yapabilirsin. Bu durumda haftada en az 3 iş günü staj yapman ve bu günlerde hiçbir derse kayıtlı olmaman gerekir; kayıtlı olduğun derslerle çakışan günlerde staj yaparsan stajın iptal edilir.
+C: Ayrıca üniversitenin protokol yaptığı kurumlarda, şartları sağlayan öğrenciler dönem içinde sektör stajı yapabilir.
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 9 –
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 10 –
+
+S: Sektör stajı şartları neler?
+S: Sektör stajı nedir?
+C: Sektör stajı, üniversitenin kurumlarla yaptığı protokoller çerçevesinde, öğretim planını aksatmayacak şekilde dönem içinde ya da yaz okulu döneminde yapılan stajdır (yaz okuluna devam edilen günlerde yapılamaz).
+C: Başvurmak için genel not ortalamanın en az 3,0 olması ya da dördüncü sınıf öğrencileri arasında ortalamada ilk %20'de olman; ayrıca en az 180 AKTS'yi tamamlamış, zorunlu stajlarından en az birini başarıyla bitirmiş ve tamamlanmamış bir zorunlu stajının olması gerekir. Sektör stajı haftada en az 2, en çok 4 tam gün yapılır ve bir dönemde 40 iş gününü aşamaz.
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 10 –
+
+S: Yurt dışında staj yapabilir miyim?
+S: Erasmus ile staj yapabilir miyim?
+C: Evet. Yurt dışında kendi bulduğun yerlerde ya da ERASMUS gibi programlarla staj yapabilirsin; ERASMUS stajlarında GTÜ ERASMUS+ Öğrenci ve Personel Değişim Yönergesi uygulanır. Bu stajın zorunlu staj sayılması için staja başlamadan önce normal staj başvurusunu yapman gerekir.
+C: Yurt dışı stajlarında sigorta masrafları dahil sorumluluk sana aittir ve staj raporu İngilizce hazırlanır.
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 11 –
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 8 –
+
+S: Çalıştığım şirkette staj yapabilir miyim?
+S: Ücretli çalıştığım yerde staj sayılır mı?
+C: Bölüm Staj Komisyonu uygun görürse, tam veya kısmi zamanlı olarak ücret karşılığında çalıştığın kurumda stajlarından sadece birini yapabilirsin.
+K: Mühendislik Fakültesi Staj Yönergesi, Madde 8 –
+
+# ------------------------------------------------------------------ Değişim programı, başka üniversiteden ders
+S: Erasmus ile gidersem derslerim sayılır mı?
+S: Erasmusta geçen süre okuma süremden sayılır mı?
+S: Değişim programına katılırsam kaydım devam eder mi?
+C: Değişim programı süresince GTÜ'deki kaydın devam eder ve bu süre öğretim süresinden sayılır.
+C: Yurt dışında değişim programıyla aldığın derslerin notlarının GTÜ'deki başarı durumuna nasıl yansıtılacağına, bölüm intibak komisyonunun görüşü ve bölüm başkanının önerisiyle ilgili yönetim kurulu karar verir.
+K: Eğitim-Öğretim Yönetmeliği, Madde 20 –
+K: Eğitim-Öğretim Yönetmeliği, Madde 21 –
+
+S: Yazın başka üniversiteden ders alabilir miyim?
+S: Yaz okulunda başka okuldan ders alsam sayılır mı?
+S: Yaz okulu notları transkripte geçer mi?
+S: Başka üniversiteden ders alabilir miyim?
+C: Danışmanının onayı, bölüm başkanlığının önerisi ve yönetim kurulu kararıyla başka bir yükseköğretim kurumundan ders alabilirsin; bu dersler programındaki kredi yükümlülüklerinin yerine sayılabilir ve notları intibak komisyonunca değerlendirilir.
+C: Yaz öğretimine özel öğrenci olarak katılacaksan, ders alacağın programın taban puanı GTÜ'ye yerleştiğin yıldaki programının ÖSYM taban puanından yüksek olmalıdır. Yaz öğretiminde alınan notlar transkriptte "yaz öğretimi" başlığıyla gösterilir.
+K: Eğitim-Öğretim Yönetmeliği, Madde 21 –
+
+# ------------------------------------------------------------------ Burslar
+S: Burs başvurusu nasıl yapılır?
+S: Vakıf bursu şartları neler?
+S: GTÜ Vakfı bursuna nasıl başvururum?
+S: Burs için AGNO kaç olmalı?
+C: GTÜ Vakfı bursuna, ilan edilen süreler içinde https://www.gtuvakfi.org/ adresindeki Burs Başvuru Formu'nu doldurup sayfada istenen belgeleri tamamlayarak başvurursun. İhtiyaç bursu, her akademik yılın başında duyurulan sürede çevrim içi başvuran ve maddi durumunu belgeleyen öğrencilere verilir.
+C: Bölümünde en az bir dönem okuduysan başvurmak için AGNO'nun en az 2,00 olması gerekir.
+K: Burs başvurusu nasıl yapılır
+K: Gereksinim (ihtiyaç) bursları
+
+S: Bursum ne zaman kesilir?
+S: Ortalamam düştü, bursum kesilir mi?
+S: KYK bursu alıyorum, vakıf bursu alabilir miyim?
+S: Kimler burs alamaz?
+S: Part time çalışıyorum, burs alabilir miyim?
+C: GTÜ Vakfı bursunu şu öğrenciler alamaz: KYK'dan veya başka bir kişi ya da kurumdan burs alanlar; asgari ücret düzeyinde aylık veya ücretle sürekli bir işte çalışanlar ya da bu düzeyde geliri olanlar; en az bir yarıyıl devamsız olanlar veya kaydını yenilemeyenler; uyarı dışında disiplin cezası alanlar ve verdiği belgeler gerçeği yansıtmayanlar.
+C: AGNO'n üst üste iki dönem 2,00'nin altına ya da bir dönem 1,50'nin altına düşerse burs kesilir.
+K: Burs alamayacak öğrenciler
+
+S: Yemek bursu nasıl alınır?
+S: Yemek bursu nedir?
+C: Yemek bursu, Sağlık Kültür Spor Dairesi iş birliğiyle ihtiyaç sahibi lisans öğrencilerine, üniversite Yönetim Kurulu onayıyla GTÜ öğrenci yemekhanesinde bir öğle yemeğinin ücretsiz verildiği bir destektir.
+C: Başvurunun nasıl yapılacağı metinde ayrıca yazmıyor; ayrıntı için Öğrenci İşleri'ne sorabilirsin.
+K: Yemek bursu
+
+S: Başarı bursu kaç ay ödeniyor?
+S: Başarı bursu nedir?
+C: Lisans Başarı Bursu, ÖSYM yerleştirme sınavıyla GTÜ'nün bir lisans programına kesin kayıt yaptıran öğrencilere, sınavdaki ve bölüme yerleşmedeki başarı sırasına göre ilanda belirtilen şartlarla verilir. Hazırlık dahil ilk akademik yılın Ekim–Haziran ayları arasında 9 ay ödenir.
+C: Sonraki yıllarda devam edip etmeyeceğine bağışçı karar verir.
+K: Başarı bursları
+
+S: Hazırlıkta burs alabilir miyim?
+S: Hazırlık öğrencisi burs alabilir mi?
+C: Hazırlık öğrencileri hazırlığın ilk yılında burs alabilir; ihtiyaç bursu, derslere devam hakkın olduğu sürece devam eder.
+C: Hazırlığı bir yılda bitiremezsen lisansa başlayana kadar burs alamazsın ve lisansa başlarken bursa yeniden başvurman gerekir.
+K: Gereksinim (ihtiyaç) bursları
+K: Burs alamayacak öğrenciler
+
+S: KYK kredim kesildi, ne yapmalıyım?
+S: KYK kredi borcumu nasıl öderim?
+S: KYK bursum ne zaman yatar?
+S: Öğrenim kredisi başvurusu nasıl yapılır?
+T: yonlendir
+B: Öğrenci İşleri
+R: ogrenci
+C: KYK kredisi ve bursu üniversitenin değil, Kredi ve Yurtlar Genel Müdürlüğü'nün (KYK) konusudur; bu yüzden GTÜ yönetmeliklerinde bu konuda bir hüküm yok. İstersen sorunu Öğrenci İşleri'ne iletebilirim.
+
+# ------------------------------------------------------------------ Yurt (örnek yönerge)
+S: Yazın yurtta kalabilir miyim?
+S: Yaz döneminde yurtta kalmak istiyorum
+S: Yaz okulunda yurtta kalabilir miyim?
+C: Yaz okulunda ders alıyorsan ya da yaz döneminde kampüste staj yapıyorsan yaz döneminde yurtta kalabilirsin. Güz ve bahar dönemindeki yurt hakkın yaza kendiliğinden geçmez; yaz için ayrıca Barınma Birimine başvurman gerekir.
+C: Başvuruda öğrenci belgesi ve gelir durumu belgesi istenir; yaz okulunda ders alıyorsan ders kayıt çıktını da eklersin.
+K: Yurt Yönergesi, Madde 4 –
+K: Yurt Yönergesi, Madde 5 –
+
+S: Yaz yurdu başvurusu için hangi belgeler lazım?
+S: Yaz yurdu başvurusu nereye yapılır?
+C: Yaz dönemi yurt başvuruları Barınma Birimine yapılır. Başvuruda öğrenci belgesi ve gelir durumu belgesi istenir; yaz okulunda ders alan öğrenciler ayrıca ders kayıt çıktısını ekler.
+K: Yurt Yönergesi, Madde 5 –
+
+S: Yurt ücreti ne zaman ödenir?
+S: Yaz yurt ücreti nasıl hesaplanır?
+C: Yurt ücretleri aylık belirlenir ve her ayın ilk beş iş günü içinde ödenir. Yaz dönemi ücreti, kaldığın hafta sayısına göre hesaplanır.
+K: Yurt Yönergesi, Madde 6 –
+
+S: Yurttan ayrılmak istiyorum
+S: Yurt depozitom iade edilir mi?
+C: Yurttan ayrılmak istiyorsan ayrılmadan en az beş gün önce Barınma Birimine yazılı bildirimde bulunmalısın. Odanı eksiksiz teslim etmezsen depoziton iade edilmez.
+K: Yurt Yönergesi, Madde 8 –
+
+# ------------------------------------------------------------------ Bilgi işlem (öğrenci)
+S: E-posta şifremi unuttum
+S: Mail şifremi unuttum
+S: Okul mailime giremiyorum
+S: Kurumsal e-postama giriş yapamıyorum
+R: ogrenci
+C: Kurumsal e-posta şifreni unuttuysan, e-Devlet ile kimliğini doğrulayarak şifre sıfırlama sayfasından kendin yenileyebilirsin.
+C: Sıfırladıktan sonra yine giriş yapamıyorsan Bilgi İşlem'e talep açabilirsin; talepler en geç iki iş günü içinde sonuçlandırılır.
+K: Bilgi İşlem Hizmetleri Rehberi, Madde 1 –
+
+S: Eduroam bağlanmıyor
+S: Kampüste wifi'ye nasıl bağlanırım?
+S: İnternet çekmiyor
+S: Kablosuz ağa bağlanamıyorum
+S: Eduroam şifresi nedir?
+R: ogrenci
+C: Kampüs kablosuz ağına eduroam üzerinden, kurumsal e-posta adresin ve şifrenle bağlanırsın. Bağlantı sorunu yaşıyorsan cihazındaki eduroam ağını silip yeniden eklemelisin.
+K: Bilgi İşlem Hizmetleri Rehberi, Madde 2 –
+
+# ------------------------------------------------------------------ Akademisyen
+S: E-posta şifremi unuttum
+S: Mail şifremi unuttum
+S: Kurumsal e-postama giriş yapamıyorum
+R: akademisyen
+C: Kurumsal e-posta şifrenizi e-Devlet ile kimliğinizi doğrulayarak şifre sıfırlama sayfasından kendiniz yenileyebilirsiniz.
+C: Sıfırladıktan sonra yine giriş yapamıyorsanız Bilgi İşlem'e talep açabilirsiniz; talepler en geç iki iş günü içinde sonuçlandırılır.
+K: Bilgi İşlem Hizmetleri Rehberi, Madde 1 –
+
+S: Eduroam bağlanmıyor
+S: Kampüste wifi'ye nasıl bağlanırım?
+S: Kablosuz ağa bağlanamıyorum
+R: akademisyen
+C: Kampüs kablosuz ağına eduroam üzerinden, kurumsal e-posta adresiniz ve şifrenizle bağlanırsınız. Bağlantı sorunu yaşıyorsanız cihazınızdaki eduroam ağını silip yeniden eklemelisiniz.
+K: Bilgi İşlem Hizmetleri Rehberi, Madde 2 –
+
+S: Laboratuvar bilgisayarına yazılım lisansı lazım
+S: MATLAB lisansı nasıl alınır?
+S: Yazılım lisansı talebi nasıl yapılır?
+R: akademisyen
+C: Üniversitenin lisansladığı yazılımlar akademik ve idari personel ile öğrencilerin kullanımına açıktır. Laboratuvar bilgisayarları için lisans taleplerini Bilgi İşlem'e iletebilirsiniz; talepler en geç iki iş günü içinde değerlendirilir.
+K: Bilgi İşlem Hizmetleri Rehberi, Madde 3 –
+
+S: Yazıcım bozuldu
+S: Bilgisayarım arızalandı
+S: Bilgisayar arızasını nasıl bildiririm?
+R: akademisyen
+C: Kurumun demirbaşına kayıtlı bilgisayar ve yazıcı arızalarını Bilgi İşlem'e bildirebilirsiniz; bildirimde cihazın demirbaş numarasını ve bulunduğu odayı belirtmeniz gerekir.
+K: Bilgi İşlem Hizmetleri Rehberi, Madde 4 –
+
+S: Projeksiyon bozuk, ne yapmalıyım?
+S: Derslikteki akıllı tahta çalışmıyor
+S: Projeksiyon arızasını nasıl bildiririm?
+S: Derslikte ses sistemi çalışmıyor
+C: Dersliklerdeki projeksiyon, ses sistemi ve akıllı tahta arızalarını Yapı İşleri'ne bildirebilirsiniz. Ders saatini etkileyen arızalara aynı gün, diğer arızalara en geç iki iş günü içinde müdahale edilir.
+K: Teknik Hizmetler Yönergesi, Madde 2 –
+
+S: Ofisimin kliması çalışmıyor
+S: Isıtma çalışmıyor
+S: Odada havalandırma bozuk
+C: Ofis ve dersliklerdeki klima, ısıtma ve havalandırma arızalarını Yapı İşleri'ne bildirebilirsiniz; bildirimde bina ve oda numarasını belirtmeniz gerekir.
+K: Teknik Hizmetler Yönergesi, Madde 3 –
+
+S: Odamda priz yanmıyor
+S: Lamba yanmıyor
+S: Su tesisatı arızalı
+C: Elektrik, aydınlatma, priz ve su tesisatı arızaları Yapı İşleri'ne bildirilir. Can ve mal güvenliğini tehdit eden bir durum varsa ayrıca güvenlik birimine de haber vermelisiniz.
+K: Teknik Hizmetler Yönergesi, Madde 4 –
+
+S: Kongre için görevlendirme ne zaman istenir?
+S: Sempozyuma gitmek istiyorum, ne yapmalıyım?
+S: Yurt içi görevlendirme nasıl alınır?
+C: Bilimsel toplantı, kongre veya sempozyuma katılmak için etkinlik tarihinden en az on beş gün önce, bölüm başkanlığının onayıyla görevlendirme talebinde bulunmalısınız. Talep, fakülte yönetim kurulu kararından sonra Personel Daire Başkanlığı tarafından işleme alınır.
+K: Personel İşlemleri Rehberi, Madde 5 –
+
+S: Yıllık izin almak istiyorum
+S: İzin talebimi kaç gün önce yapmalıyım?
+S: Yıllık izin nasıl alınır?
+C: Yıllık izin talebinizi en az üç iş günü önceden bölüm başkanlığına iletmelisiniz. Onaylanan izinler Personel Daire Başkanlığı tarafından kayda alınır.
+K: Personel İşlemleri Rehberi, Madde 6 –
+
+S: Hizmet belgesi nasıl alırım?
+S: Islak imzalı hizmet belgesi lazım
+C: Hizmet belgesini e-Devlet üzerinden alabilirsiniz. Islak imzalı belge gerekiyorsa Personel Daire Başkanlığı'na talep açarsınız; belge en geç beş iş günü içinde hazırlanır.
+K: Personel İşlemleri Rehberi, Madde 7 –
