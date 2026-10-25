@@ -155,6 +155,35 @@ function asistanBalonu(ic, sinif = "", stil = "") {
   return `<div class="asistan-satir" aria-label="${ASISTAN_ADI}">${pupaGorseli()}<div class="balon asistan ${sinif}"${stil ? ` style="${stil}"` : ""}>${ic}</div></div>`;
 }
 
+// Asistan cevabının ne kadar emin olduğunu ve neye dayandığını kullanıcıya açıkça söyler
+function asistanUstEtiketi(c) {
+  if (c.emin || c.kip === "sohbet" || c.kip === "secenek") return "";
+  const metin = c.kip === "yapay_zeka" ? "Kısmen emin: yönetmelik sorunun tamamını karşılamıyor"
+    : c.kip === "yonlendir" ? "Bu konu üniversite yönetmeliklerinde yer almıyor" : "Emin değilim";
+  return `<span class="cok-kucuk" style="color:var(--turuncu-yazi);font-weight:800">${metin}</span>`;
+}
+
+function asistanAltNotu(c) {
+  const notlar = {
+    sss: "Sık sorulan sorulardan; yukarıdaki yönetmelik maddesine dayanır.",
+    yapay_zeka: "Yerel yapay zekâ (Qwen) yukarıdaki maddeye dayanarak yazdı.",
+    alinti: "Yapay zekânın cevabı denetimden geçmediği için maddenin ilgili kısmı aynen gösterildi.",
+    yedek: "Yapay zekâ hazır olmadığı için maddenin ilgili kısmı aynen gösterildi.",
+  };
+  // Yapay zekânın özetinin yanında maddenin kendi cümleleri: kullanıcı ikisini karşılaştırabilir
+  const alinti = c.alinti ? `<details class="madde-alintisi"><summary>Yönetmelikte yazan</summary><span>“${kacis(c.alinti)}”</span></details>` : "";
+  return alinti + (notlar[c.kip] ? `<span class="cok-kucuk soluk">${notlar[c.kip]}</span>` : "");
+}
+
+// "Bunu mu demek istedin?" / seçenek düğmeleri. Tıklanınca o soru sorulur (data-oneri).
+function onerilerCiz(c, siz = false) {
+  if (!c.oneriler || !c.oneriler.length) return "";
+  const baslik = c.kip === "bulunamadi" ? (siz ? "Bunu mu demek istediniz?" : "Bunu mu demek istedin?")
+    : c.kip === "sohbet" ? (siz ? "Şunları sorabilirsiniz:" : "Şunları sorabilirsin:") : "";
+  return `<div class="oneri-kutusu">${baslik ? `<span class="cok-kucuk soluk">${baslik}</span>` : ""}
+    <div class="oneriler">${c.oneriler.map((o) => `<button class="oneri" type="button" data-oneri="${kacis(o)}">${kacis(o)}</button>`).join("")}</div></div>`;
+}
+
 // "Yeni gelişme" çipi: karşı taraf talepte bir şey yaptı ve kullanıcı henüz bakmadı
 function yeniCipi(goster, metin = "Yeni gelişme") {
   return goster ? `<span class="cip yeni-gelisme">${kacis(metin)}</span>` : "";

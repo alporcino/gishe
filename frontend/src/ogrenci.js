@@ -234,7 +234,8 @@ async function asistanEkrani() {
     <div id="sohbet" class="sohbet"></div>
     <div class="oneriler" id="oneriler">
       <button class="oneri" type="button">Yazın yurtta kalabilir miyim?</button>
-      <button class="oneri" type="button">Kayıt dondurmak için ne gerekiyor?</button>
+      <button class="oneri" type="button">Devamsızlık sınırı nedir?</button>
+      <button class="oneri" type="button">Bütünleme sınavı var mı?</button>
       <button class="oneri" type="button">Bursum kesilirse yurt ücreti değişir mi?</button>
     </div>
     <form id="asistan-formu" class="satir">
@@ -270,16 +271,18 @@ function sohbetiCiz() {
     if (m.bekliyor) return asistanBalonu(`<span class="dusunuyor">${ASISTAN_ADI} düşünüyor</span><span class="cok-kucuk soluk">Yapay zekâ üniversitenin kendi sunucusunda çalıştığı için birkaç saniye sürebilir.</span>`);
     if (m.hata) return asistanBalonu(`<span class="hata">${kacis(m.hata)}</span>`, "emin-degil");
     const c = m.cevap;
-    const butonlar = c.emin
+    const sohbet = c.kip === "sohbet" || c.kip === "secenek";
+    const butonlar = sohbet ? "" : c.emin
       ? `<button class="buton" data-islem="talep" data-i="${i}" type="button">Talep oluştur</button>`
       : `<button class="buton" data-islem="ilet" data-i="${i}" type="button">Personele ilet (${kacis(c.birim)})</button>
          <button class="buton ikincil" data-islem="vazgec" data-i="${i}" type="button">Vazgeç</button>`;
     return asistanBalonu(`
-      ${c.emin ? "" : `<span class="cok-kucuk" style="color:var(--turuncu-yazi);font-weight:800">${c.kip === "yapay_zeka" ? "Kısmen emin: yönetmelik sorunun tamamını karşılamıyor" : "Emin değilim"}</span>`}
+      ${asistanUstEtiketi(c)}
       <span>${kacis(c.cevap)}</span>
       ${kaynaklarCiz(c)}
-      ${c.kip === "yedek" ? '<span class="cok-kucuk soluk">Yapay zekâ hazır olmadığı için ilgili madde doğrudan gösterildi.</span>' : ""}
-      ${m.kapandi ? "" : `<div class="butonlar">${butonlar}</div>`}`, c.emin ? "" : "emin-degil");
+      ${onerilerCiz(c)}
+      ${asistanAltNotu(c)}
+      ${m.kapandi || !butonlar ? "" : `<div class="butonlar">${butonlar}</div>`}`, c.emin ? "" : "emin-degil");
   }).join("");
   kutu.lastElementChild?.scrollIntoView({ block: "nearest" });
 }
@@ -300,6 +303,8 @@ async function sor(soru) {
 }
 
 async function sohbetButonu(e) {
+  const oneri = e.target.closest("button[data-oneri]");
+  if (oneri) { sor(oneri.dataset.oneri); return; }
   const buton = e.target.closest("button[data-islem]");
   if (!buton) return;
   const m = durum.sohbet[Number(buton.dataset.i)];

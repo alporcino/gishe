@@ -183,12 +183,19 @@ async function asistanaSor(e) {
   kutu.innerHTML = asistanBalonu(`<span class="dusunuyor">${ASISTAN_ADI} düşünüyor</span>`, "", "max-width:100%");
   try {
     const c = await api("/api/asistan", { soru });
+    const sohbet = c.kip === "sohbet" || c.kip === "secenek";
     kutu.innerHTML = asistanBalonu(`
-      ${c.emin ? "" : `<span class="cok-kucuk" style="color:var(--turuncu-yazi);font-weight:800">${c.kip === "yapay_zeka" ? "Kısmen emin: yönetmelik sorunun tamamını karşılamıyor" : "Emin değilim"}</span>`}
+      ${asistanUstEtiketi(c)}
       <span>${kacis(c.cevap)}</span>
       ${kaynaklarCiz(c)}
-      ${c.emin ? "" : `<div class="butonlar"><button type="button" class="buton" id="ilet">Personele ilet (${kacis(c.birim)})</button></div>`}`,
+      ${onerilerCiz(c, true)}
+      ${asistanAltNotu(c)}
+      ${c.emin || sohbet ? "" : `<div class="butonlar"><button type="button" class="buton" id="ilet">Personele ilet (${kacis(c.birim)})</button></div>`}`,
       c.emin ? "" : "emin-degil", "max-width:100%");
+    kutu.querySelectorAll("button[data-oneri]").forEach((b) => b.addEventListener("click", () => {
+      alan.value = b.dataset.oneri;
+      document.getElementById("sor-formu").requestSubmit();
+    }));
     const ilet = document.getElementById("ilet");
     if (ilet) {
       ilet.addEventListener("click", async () => {
