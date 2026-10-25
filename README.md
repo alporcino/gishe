@@ -12,14 +12,16 @@
 ## İçindekiler
 1. [Problem](#problem)
 2. [Çözüm](#çözüm)
-3. [Çalıştırma](#çalıştırma)
-4. [Mimari](#mimari)
-5. [Yapay zekâ bileşeni](#yapay-zekâ-bileşeni)
-6. [Ayarlar](#ayarlar)
-7. [Güvenlik ve KVKK](#güvenlik-ve-kvkk)
-8. [Proje yapısı](#proje-yapısı)
-9. [Geliştiriciler](#geliştiriciler)
-10. [Yapay zekâyı nasıl kullandık](#yapay-zekâyı-nasıl-kullandık)
+3. [Ekran görüntüleri](#ekran-görüntüleri)
+4. [Çalıştırma](#çalıştırma)
+5. [Mimari](#mimari)
+6. [Yapay zekâ bileşeni](#yapay-zekâ-bileşeni)
+7. [Ayarlar](#ayarlar)
+8. [Güvenlik ve KVKK](#güvenlik-ve-kvkk)
+9. [Görünüm](#görünüm)
+10. [Proje yapısı](#proje-yapısı)
+11. [Geliştiriciler](#geliştiriciler)
+12. [Yapay zekâyı nasıl kullandık](#yapay-zekâyı-nasıl-kullandık)
 
 ---
 
@@ -48,10 +50,35 @@ Gishe üç söz verir: **her talebin bir sahibi var, her adım görünür, her s
 - **Gerekçeli aktarma:** Talep başka birime ancak gerekçe yazılarak aktarılır; talep sahibi gerekçeyi görür.
 - **Otomatik yönlendirme:** Öğrenci birimi bilmek zorunda değil; sistem konuya göre doğru birimi seçer.
 - **Hedef süre:** Her birimin hedef cevap süresi var; aşan talepler personel listesinde öne çıkar.
-- **Yapay zekâ asistanı Pupa:** GTÜ'nün maskotu Pupa'nın yüzüyle konuşur. Yönetmelik ve sık sorulan sorulardan, **kaynak göstererek** cevap verir.
-  Emin değilse **uydurmaz**, soruyu tek dokunuşla doğru birime talep olarak iletir.
+  Süre **iş günü** olarak sayılır: hafta sonları ve resmî tatiller (dinî bayramlar dahil) sayılmaz.
+- **"Yeni gelişme" işareti:** Birim mesaj yazdığında, durumu değiştirdiğinde ya da talebi aktardığında talep sahibi
+  ana sayfada ve menüde bunu görür. İstenirse e-posta ile de haber verilir (isteğe bağlı, mesaj içeriği e-postaya yazılmaz).
+- **Değerlendirme:** Sonuçlanan talep 1–5 yıldızla puanlanır, isteğe bağlı yorum yazılır.
+  Birimin memnuniyet ortalaması personel panelinde görünür.
+- **Yeniden açma:** Sorun çözülmediyse talep sahibi, sonuçlanmadan sonraki 30 gün içinde gerekçe yazarak talebi yeniden açabilir.
+- **Yapay zekâ asistanı Pupa:** GTÜ'nün maskotu Pupa'nın yüzüyle konuşur. Yönetmeliklerden ve sık sorulan sorulardan,
+  **kaynak göstererek** cevap verir. Türkçe karakter kullanılmadan yazılan soruları, kısaltmaları ("büt", "GANO") ve
+  eş sesli kelimeleri ("yazın yurtta kalmak" / "dilekçe yazmak") anlar. Emin değilse **uydurmaz**; benzer soruları önerir
+  ve soruyu tek dokunuşla doğru birime talep olarak iletir.
 - **Üç rol, üç ekran:** Öğrenci, akademisyen ve birim personeli. Rol **seçilemez**; hesaptan gelir
   ve her istekte sunucuda kontrol edilir.
+
+## Ekran görüntüleri
+
+| Giriş | Öğrenci ana sayfası |
+|---|---|
+| ![Giriş ekranı](docs/ekran-giris.png) | ![Öğrenci ana sayfası](docs/ekran-ogrenci.png) |
+| Kurumsal hesapla giriş. Rol seçilmez, hesaptan gelir. | "Şu an kimde?", yeni gelişme işareti ve değerlendirme bekleyen talep. |
+
+| Asistan Pupa | Değerlendirme |
+|---|---|
+| ![Asistan](docs/ekran-asistan.png) | ![Değerlendirme](docs/ekran-degerlendirme.png) |
+| Yönetmelikten kaynak göstererek cevap; emin değilse benzer soruları önerir ve personele iletmeyi teklif eder. | Sonuçlanan talebe yıldız ve yorum; çözülmediyse yeniden açma. |
+
+| Birim personeli | Akademisyen |
+|---|---|
+| ![Personel paneli](docs/ekran-personel.png) | ![Akademisyen ekranı](docs/ekran-akademisyen.png) |
+| Sadece kendi biriminin talepleri, özet sayılar, yanıt, durum ve gerekçeli aktarma. | Arıza, bilgi işlem, personel işleri ve fakülte için hızlı talep; Pupa'ya soru. |
 
 ## Çalıştırma
 
@@ -133,22 +160,55 @@ ya da `.env` içinde `API_URL=http://localhost:8000` verilirse doğrudan (arka u
 
 ## Yapay zekâ bileşeni
 
-**Konteyner içinde yerel çalışan açık kaynak bir dil modeliyle kurulmuş LLM özelliği.**
+**Konteyner içinde yerel çalışan açık kaynak bir dil modeliyle kurulmuş LLM özelliği: asistan Pupa.**
 
 - **Model:** Qwen 2.5 (varsayılan `qwen2.5:3b`), Ollama ile, **tamamen yerelde ve CPU'da**.
   Daha hızlı cevap için `.env` içinde `MODEL=qwen2.5:1.5b` yapılabilir.
 - **Harici yapay zekâ API'si yoktur.** Ürün hiçbir bulut servisine (Claude, OpenAI, Gemini…) istek atmaz.
-- **Yöntem (RAG – "bul, sonra cevapla"):**
-  1. `backend/yonetmelikler/` klasöründeki metinler maddelere (uzunsa fıkra gruplarına) bölünür.
-  2. Soruya en ilgili maddeler bulunur. Seyrek kelimeler ("burs", "yatay") daha ağır sayılır, madde başlığında geçen
-     kelimeler öne çıkar ve öğrencinin günlük dili yönetmelik diline köprülenir ("AKTS" → "kredi yükü",
-     "Erasmus" → "değişim programı"). Kullanıcının rolüne uygun olmayan metinler aranmaz.
-  3. Model, **sadece bu maddelere dayanarak** cevap vermeye zorlanır; cevabın altında kaynak gösterilir.
-  4. İlgili madde yoksa ya da model emin değilse asistan "emin değilim" der ve doğru birime iletmeyi önerir.
-- **Yedek mod:** Model henüz yüklenmediyse veya cevap gecikirse uygulama çökmez; asistan en ilgili yönetmelik
-  maddesini doğrudan gösterir. Asistan ekranında modelin durumu yazar.
-- **Hız:** CPU'da makul süre için bağlam ve cevap uzunluğu sınırlıdır (`MODEL_EN_FAZLA_TOKEN`).
-  Model açılışta belleğe yüklenir, böylece ilk soruda beklenmez. Cevap beklerken ekranda yükleniyor göstergesi görünür.
+
+**Bir soru gelince sırasıyla** (`backend/asistan.py`, `backend/dil.py`):
+
+1. **Sohbet mi?** "Merhaba", "teşekkürler", "sen kimsin?" gibi mesajlara kısa sohbet cevabı verilir; yönetmelikte aranmaz.
+2. **Soruyu anlama (Türkçe dil katmanı).** Öğrenciler yönetmelik diliyle değil günlük dille soru sorar:
+   - Türkçe karakter olmadan yazılan sorular ("kayit dondurma") ve ekli kelimeler ("kaydımı", "yurtlarda") kök hâline getirilir.
+   - Kısaltmalar ve günlük ifadeler yönetmelik diline çevrilir: "büt" → "D sınavı", "GANO" → "ağırlıklı genel not ortalaması",
+     "bölüm değiştirmek" → "yatay geçiş", "Erasmus" → "değişim programı".
+   - **Eş sesli kelimelerin** anlamı cümlenin geri kalanına bakarak seçilir; yanlış anlam aramadan çıkarılır:
+
+     | Kelime | Örnek | Pupa'nın anladığı |
+     |---|---|---|
+     | yaz | "**Yazın** yurtta kalabilir miyim?" / "Dilekçe nasıl **yazılır**?" | yaz dönemi / yazmak (aranmaz) |
+     | kal | "Dersten **kaldım**" / "Yurtta **kalmak**" / "Tek dersim **kaldı**" | başarısızlık / konaklama / tek ders sınavı |
+     | geç | "Dersi **geçmek**" / "Başka bölüme **geçmek**" / "Kayda **geç** kaldım" | başarı / yatay geçiş / mazeretli kayıt |
+     | kredi | "Kaç **kredi** ders alabilirim?" / "KYK **kredim** kesildi" | AKTS / öğrenim kredisi (üniversitenin konusu değil) |
+     | bırak | "Dersi **bırakmak**" / "Okulu **bırakmak**" | ders ekleme-çıkarma / üniversiteden ayrılma |
+     | rapor | "**Rapor** aldım, sınava giremedim" / "Staj **raporu**" | mazeret / staj raporu |
+     | yurt | "**Yurt**ta kalmak" / "**Yurt** içi görevlendirme" | yurt binası / ülke içi |
+3. **Sık sorulan sorular** (`backend/sss.txt`). En sık sorulan 74 konu için (260'ı aşkın farklı söyleyişle) yönetmelik maddelerinden yazılmış hazır
+   cevaplar vardır. Soru bunlardan birine yeterince benziyorsa cevap **anında** ve kaynağıyla verilir. Her hazır cevap bir
+   yönetmelik maddesine bağlıdır; kaynağı bulunamayan cevap sisteme yüklenmez.
+4. **RAG ("bul, sonra cevapla").** Listede olmayan sorularda `backend/yonetmelikler/` içindeki maddeler arasında en ilgilileri
+   bulunur (seyrek ve konu belirleyen kelimeler ağır sayılır, madde ve metin başlığında geçen kelimeler öne çıkar) ve
+   **sadece bu maddeler** Qwen'e verilir. Modele iki örnek soru-cevap da gösterilir: biri metinden cevaplanan, biri
+   "BILMIYORUM" denmesi gereken.
+5. **Model cevabının denetimi.** Küçük modeller hata yapabilir; bu yüzden cevap kullanıcıya gösterilmeden önce denetlenir.
+   Cevapta metinde olmayan bir **sayı** (rakamla ya da yazıyla) varsa, cevap maddeye **dayanmıyorsa**, talimattaki örneklerden
+   bilgi taşıdıysa, "daha fazla bilgi gerekir" gibi **kaçamak** bir cümleyse ya da Türkçe dışında bir yazıya kaydıysa gösterilmez.
+   Gösterilen her model cevabının altında maddenin kendi cümleleri de **"Yönetmelikte yazan"** başlığıyla verilir; kullanıcı
+   özeti asıl metinle karşılaştırabilir. Madde soruyu çok güçlü karşılıyorsa yerine maddenin
+   soruyla ilgili cümleleri aynen alıntılanır; değilse asistan "emin değilim" der.
+6. **Uydurmama.** İlgili madde yoksa Pupa "emin değilim" der, **"Bunu mu demek istedin?"** diye benzer soruları önerir ve
+   soruyu doğru birime talep olarak iletmeyi teklif eder. "burs" gibi tek kelimelik sorularda hangi konuyu kastettiğini sorar.
+
+- **Yedek mod:** Model henüz yüklenmediyse veya cevap gecikirse uygulama çökmez; sık sorulan sorular ve madde
+  alıntılarıyla çalışmaya devam eder. Asistan ekranında modelin durumu yazar.
+- **Hız:** Sık sorulan sorular anında cevaplanır. Modele giden sorularda bağlam ve cevap uzunluğu sınırlıdır
+  (`MODEL_EN_FAZLA_TOKEN`); sabit talimat kısmı Ollama'nın önbelleğinden kullanılır, model açılışta belleğe yüklenir.
+- **Ölçüm:** `backend/soru_seti.py` içinde yaklaşık 400 gerçekçi soru vardır: temel sorular, sonradan farklı söyleyişlerle
+  yazılan ek sorular ve metne benzeyen ama cevabı olmayan tuzak sorular (Türkçe karaktersiz yazım, kısaltma ve eş sesli
+  kelimeler dahil). `docker compose exec backend python test_asistan.py` ile ölçülür. Model kapalıyken (en kötü durum)
+  sonuç: **%96 doğru, 0 yanlış cevap**; kalan sorularda asistan uydurmak yerine "emin değilim" der.
+  Gerçek modelle denemek için: `docker compose exec backend python deneme_model.py`.
 - Görüntü işleme yapılmaz; **YOLO ailesinden hiçbir model kullanılmaz.**
 
 > **Bilgi kaynağı (`backend/yonetmelikler/`):**
@@ -177,17 +237,36 @@ Tüm ayarlar ortam değişkenlerinden okunur; koda gömülü port, adres veya mo
 | `GUVENLI_CEREZ` | `false` | HTTPS arkasında `true` |
 | `DEMO_MODU` | `true` | Personel ekranında "Örnek verileri sıfırla" düğmesi |
 | `OGRENCI1_SIFRE` … `PERSONEL3_SIFRE` | `.env.example`'daki örnekler | Test hesaplarının şifreleri; boşsa hesap girişe kapanır |
+| `GIRIS_DENEME_SINIRI` | `10` | Bir hesaba bu kadar hatalı şifre girilirse hesap geçici olarak kilitlenir |
+| `GIRIS_KILIT_DAKIKA` | `15` | Kilit süresi (dakika) |
+| `EK_TATILLER` | *(boş)* | Resmî tatillere ek, iş günü sayılmayacak günler (`2026-10-30,2027-05-20`) |
+| `YENIDEN_ACMA_GUN` | `30` | Sonuçlanan talep kaç gün içinde yeniden açılabilir |
+| `SMTP_SUNUCU` | *(boş)* | E-posta bildirimi için sunucu; boşsa e-posta gönderilmez |
+| `SMTP_PORT`, `SMTP_KULLANICI`, `SMTP_SIFRE`, `SMTP_GONDEREN` | `587`, *(boş)* | E-posta hesabı bilgileri (sadece `.env` içinde) |
+| `SMTP_GUVENLIK` | `starttls` | `starttls`, `ssl` veya `yok` |
+| `UYGULAMA_URL` | `http://localhost:3000` | E-postadaki bağlantının açacağı adres |
 
 ## Güvenlik ve KVKK
 
 - **Depoda gerçek şifre ve gizli bilgi yoktur.** Ayarlar `.env` dosyasındadır ve `.gitignore` ile dışarıda tutulur.
   `.env.example` sadece örnek değerler içerir; kurgusal test hesaplarının şifreleri de bunlardandır.
-- Şifreler veritabanında düz değil, tuzlanıp özetlenerek (PBKDF2) saklanır. Oturum anahtarı JavaScript'in okuyamadığı bir çerezdedir.
+- Şifreler veritabanında düz değil, tuzlanıp özetlenerek (PBKDF2-SHA256, 600.000 tur) saklanır. Oturum anahtarı JavaScript'in okuyamadığı bir çerezdedir.
+- Bir hesaba art arda hatalı şifre girilirse hesap geçici olarak kilitlenir (kaba kuvvet denemelerine karşı).
+  Hata mesajı e-postanın mı şifrenin mi yanlış olduğunu söylemez.
 - Rol tarayıcıdan değil veritabanından gelir; her istekte sunucuda kontrol edilir. Öğrenci "akademisyen gibi" talep açamaz.
 - Her kullanıcı sadece kendi taleplerini, her personel sadece kendi biriminin taleplerini görür.
 - Asistana sorulan **soru metni saklanmaz**; istatistik için sadece zaman ve "cevaplandı / cevaplanamadı" bilgisi tutulur.
 - Yapay zekâ üniversitenin kendi sunucusunda çalışır; öğrenci verisi dış bir şirkete gönderilmez.
+- E-posta bildirimi isteğe bağlıdır ve e-postada **mesajın içeriği yer almaz**; sadece talep numarası, konu ve
+  uygulamanın bağlantısı bulunur. Ayrıntı ancak giriş yapılarak görülür.
 - Hatalı veya eksik girdi uygulamayı çökertmez; kullanıcıya anlaşılır bir Türkçe hata mesajı gösterilir.
+
+## Görünüm
+
+Arayüz Gebze Teknik Üniversitesi'nin kurumsal renkleriyle (lacivert, kırmızı, turuncu) hazırlandı; üst şeritte ve giriş
+ekranında GTÜ logosu, asistanın yanında GTÜ'nün maskotu Pupa yer alır. Öğrenci ekranı telefonda uygulama gibi kullanılacak
+şekilde tasarlandı (alt menü: Ana sayfa, Taleplerim, Asistan, Yeni talep). Personel ve akademisyen ekranları masaüstü içindir.
+GTÜ logosu ve maskotu üniversiteye aittir; bu projede yalnızca yarışma sunumu için kullanılmıştır.
 
 ## Proje yapısı
 
@@ -200,8 +279,15 @@ gishe/
 │  ├─ requirements.txt
 │  ├─ main.py              API, roller, talepler, /health
 │  ├─ ayarlar.py           Ortam değişkenlerinden ayar okuma
-│  ├─ asistan.py           RAG asistanı (Ollama'ya bağlanır)
-│  └─ yonetmelikler/       Asistanın bilgi kaynağı (örnek metinler)
+│  ├─ asistan.py           Asistan Pupa: sık sorulan sorular, RAG, model cevabının denetimi (Ollama'ya bağlanır)
+│  ├─ dil.py               Türkçe dil katmanı: kök bulma, eş sesli kelimeler, kısaltmalar, sohbet mesajları
+│  ├─ sss.txt              Sık sorulan sorular ve yönetmelik maddesine dayanan hazır cevaplar
+│  ├─ yonetmelikler/       Asistanın bilgi kaynağı (GTÜ metinleri ve örnek metinler)
+│  ├─ soru_seti.py         Asistanı ölçmek için ~400 gerçekçi soru
+│  ├─ test_asistan.py      Ölçüm testi (model gerektirmez)
+│  ├─ deneme_model.py      Asistanı gerçek modelle deneme betiği
+│  ├─ bildirim.py          İsteğe bağlı e-posta bildirimi
+│  └─ tatiller.py          Resmî tatiller (iş günü hesabı)
 ├─ frontend/               Ön yüz
 │  ├─ Dockerfile           Derleme (Node) + sunum (nginx)
 │  ├─ package.json, build.mjs
@@ -209,7 +295,7 @@ gishe/
 │  └─ src/                 HTML, CSS, JavaScript, görseller (GTÜ logosu, maskot Pupa)
 ├─ ollama/
 │  └─ Dockerfile           Qwen modelini derleme sırasında imaja indirir
-└─ docs/                   Ekran görüntüleri ve demo videosu
+└─ docs/                   Ekran görüntüleri
 ```
 
 ## Geliştiriciler
