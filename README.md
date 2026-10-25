@@ -12,16 +12,14 @@
 ## İçindekiler
 1. [Problem](#problem)
 2. [Çözüm](#çözüm)
-3. [Ekran görüntüleri](#ekran-görüntüleri)
-4. [Çalıştırma](#çalıştırma)
-5. [Mimari](#mimari)
-6. [Yapay zekâ bileşeni](#yapay-zekâ-bileşeni)
-7. [Ayarlar](#ayarlar)
-8. [Güvenlik ve KVKK](#güvenlik-ve-kvkk)
-9. [Görünüm](#görünüm)
-10. [Proje yapısı](#proje-yapısı)
-11. [Geliştiriciler](#geliştiriciler)
-12. [Yapay zekâyı nasıl kullandık](#yapay-zekâyı-nasıl-kullandık)
+3. [Çalıştırma](#çalıştırma)
+4. [Mimari](#mimari)
+5. [Yapay zekâ bileşeni](#yapay-zekâ-bileşeni)
+6. [Ayarlar](#ayarlar)
+7. [Güvenlik ve KVKK](#güvenlik-ve-kvkk)
+8. [Proje yapısı](#proje-yapısı)
+9. [Geliştiriciler](#geliştiriciler)
+10. [Yapay zekâyı nasıl kullandık](#yapay-zekâyı-nasıl-kullandık)
 
 ---
 
@@ -50,33 +48,10 @@ Gishe üç söz verir: **her talebin bir sahibi var, her adım görünür, her s
 - **Gerekçeli aktarma:** Talep başka birime ancak gerekçe yazılarak aktarılır; talep sahibi gerekçeyi görür.
 - **Otomatik yönlendirme:** Öğrenci birimi bilmek zorunda değil; sistem konuya göre doğru birimi seçer.
 - **Hedef süre:** Her birimin hedef cevap süresi var; aşan talepler personel listesinde öne çıkar.
-  Süre **iş günü** olarak sayılır: hafta sonları ve resmî tatiller (dinî bayramlar dahil) sayılmaz.
-- **"Yeni gelişme" işareti:** Birim mesaj yazdığında, durumu değiştirdiğinde ya da talebi aktardığında talep sahibi
-  ana sayfada ve menüde bunu görür. İstenirse e-posta ile de haber verilir (isteğe bağlı, mesaj içeriği e-postaya yazılmaz).
-- **Değerlendirme:** Sonuçlanan talep 1–5 yıldızla puanlanır, isteğe bağlı yorum yazılır.
-  Birimin memnuniyet ortalaması personel panelinde görünür.
-- **Yeniden açma:** Sorun çözülmediyse talep sahibi, sonuçlanmadan sonraki 30 gün içinde gerekçe yazarak talebi yeniden açabilir.
-- **Yapay zekâ asistanı:** Yönetmelik ve sık sorulan sorulardan, **kaynak göstererek** cevap verir.
+- **Yapay zekâ asistanı Pupa:** GTÜ'nün maskotu Pupa'nın yüzüyle konuşur. Yönetmelik ve sık sorulan sorulardan, **kaynak göstererek** cevap verir.
   Emin değilse **uydurmaz**, soruyu tek dokunuşla doğru birime talep olarak iletir.
 - **Üç rol, üç ekran:** Öğrenci, akademisyen ve birim personeli. Rol **seçilemez**; hesaptan gelir
   ve her istekte sunucuda kontrol edilir.
-
-## Ekran görüntüleri
-
-| Giriş | Öğrenci ana sayfası |
-|---|---|
-| ![Giriş ekranı](docs/ekran-giris.png) | ![Öğrenci ana sayfası](docs/ekran-ogrenci.png) |
-| Giriş ekranı. Rol seçilmez, hesaptan gelir; demo hesapları sadece demo modunda görünür. | "Şu an kimde?", yeni gelişme işareti ve değerlendirme bekleyen talep. |
-
-| Asistan | Değerlendirme |
-|---|---|
-| ![Asistan](docs/ekran-asistan.png) | ![Değerlendirme](docs/ekran-degerlendirme.png) |
-| Yönetmelikten kaynak göstererek cevap; emin değilse personele iletmeyi önerir. | Sonuçlanan talebe yıldız ve yorum; çözülmediyse yeniden açma. |
-
-| Birim personeli | Akademisyen |
-|---|---|
-| ![Personel paneli](docs/ekran-personel.png) | ![Akademisyen ekranı](docs/ekran-akademisyen.png) |
-| Sadece kendi biriminin talepleri, özet sayılar, yanıt, durum ve gerekçeli aktarma. | Arıza, bilgi işlem, personel işleri ve fakülte için hızlı talep. |
 
 ## Çalıştırma
 
@@ -107,29 +82,34 @@ docker compose up --build
 - `.env` dosyası **zorunlu değildir**; ayar değiştirmek isterseniz `.env.example` dosyasını `.env` adıyla kopyalayın.
 - Durdurmak: `Ctrl + C` ya da `docker compose down`. Verileri de silmek: `docker compose down -v`.
 
-### Demo hesapları
-Giriş ekranındaki **Demo hesapları** listesinden bir hesaba tıklamak yeterlidir (şifresiz demo girişi).
-Hesaplar ve kişiler örnektir, gerçek değildir.
+### Test hesapları
+Her rolden üç hesap vardır. **Kişiler kurgusaldır**; bu hesaplara e-posta bildirimi gönderilmez.
+Şifreler kodda değil, `.env.example` dosyasında **örnek değer** olarak durur; `docker compose` bu dosyayı
+varsayılan olarak okur, `.env` varsa onun değerleri geçerli olur.
 
-| Rol | Örnek hesap | Ne görür? |
-|---|---|---|
-| Öğrenci | Ebru Y. (Mimarlık, 1. sınıf) | Kendi talepleri, "şu an kimde?", asistan |
-| Akademisyen | Dr. Öğr. Üyesi Ayşe Demir | Arıza / bilgi işlem / personel işleri talepleri, asistan |
-| Personel | Barınma Birimi, Öğrenci İşleri, Yapı İşleri… | Sadece kendi biriminin talepleri, yanıtlama, gerekçeli aktarma |
+| Rol | Ad | E-posta | Şifre | Ne görür? |
+|---|---|---|---|---|
+| Öğrenci | Elif Yıldırım (Mimarlık, 1. sınıf) | `e.yildirim2026@gtu.edu.tr` | `7S2RVM-39sc` | Kendi talepleri, "şu an kimde?", asistan Pupa |
+| Öğrenci | Mert Kaya (İnşaat Müh., 2. sınıf) | `m.kaya2025@gtu.edu.tr` | `miDua3-quFq` | 〃 |
+| Öğrenci | Zeynep Aksoy (Moleküler Biyoloji ve Genetik, 3. sınıf) | `z.aksoy2024@gtu.edu.tr` | `FMEfTh-tX4M` | 〃 |
+| Akademisyen | Dr. Öğr. Üyesi Selin Ergüven (Bilgisayar Müh.) | `selin.erguven@gtu.edu.tr` | `8tdKgy-mK2z` | Arıza / bilgi işlem / personel işleri talepleri, asistan |
+| Akademisyen | Prof. Dr. Tarık Bozdağ (İnşaat Müh.) | `tarik.bozdag@gtu.edu.tr` | `zvnkKd-8pBs` | 〃 |
+| Akademisyen | Doç. Dr. Nihan Karaca (Elektronik Müh.) | `nihan.karaca@gtu.edu.tr` | `SfxAqk-Z83U` | 〃 |
+| Personel | Gökhan Şeker (Öğrenci İşleri) | `gokhan.seker@gtu.edu.tr` | `qimTr2-6ETt` | Sadece kendi biriminin talepleri, yanıtlama, gerekçeli aktarma |
+| Personel | Derya Uçar (Barınma Birimi) | `derya.ucar@gtu.edu.tr` | `pxTqm8-XNqp` | 〃 |
+| Personel | Serkan Avcı (Yapı İşleri) | `serkan.avci@gtu.edu.tr` | `AxM2K6-xM2E` | 〃 |
 
-Gerçek kullanımda `.env` içinde `DEMO_MODU=false` yapılır; demo listesi ve şifresiz giriş kapanır.
+Fakülte Sekreterliği, Strateji Geliştirme, Bilgi İşlem ve Personel Daire Başkanlığı da sistemde birim olarak
+vardır ve talepler bu birimlere yönlenir; bu dört birim için test hesabı açılmamıştır.
+
+Gerçek kullanımda `.env` içinde bu şifre değişkenlerini boş bırakın (ör. `OGRENCI1_SIFRE=`); şifresi
+olmayan hesap girişe kapanır. Şifreler veritabanında düz değil, özetlenerek saklanır.
 
 ### Kısa deneme senaryosu
-1. **Ebru** ile girin → ana sayfada **"Talebinde yeni gelişme var"** uyarısını görün. *Yaz dönemi yurt başvurusu*
-   talebinde "Şu an kimde?" kartına, talebin yolculuğuna ve aktarma gerekçesine bakın.
-2. **Asistan** sekmesinde "Yazın yurtta kalabilir miyim?" diye sorun → kaynaklı cevap.
-3. "Bursum kesilirse yurt ücreti değişir mi?" → asistan emin değilse **Personele ilet** der; soru tek dokunuşla talep olur.
-4. *İngilizce öğrenci belgesi* talebini açın → yıldız verip yorum yazın ve **Değerlendir** deyin.
-   Aynı ekrandan "Sorun çözülmedi mi? Talebi yeniden aç" seçeneğini de görün.
-5. Çıkış yapıp **Barınma Birimi Personeli** ile girin → talep listede. Ebru'ya mesaj yazın; gerekçe yazmadan
-   aktarmayı deneyin: sistem izin vermez.
-6. Tekrar **Ebru** ile girin → yeni mesaj "Yeni gelişme" olarak görünür.
-7. **Dr. Öğr. Üyesi Ayşe Demir** ile girin → hızlı talep ekranında bir arıza bildirin; talep doğrudan Yapı İşleri'ne gider.
+1. **Elif** ile girin → *Yaz dönemi yurt başvurusu* talebinde "Şu an kimde?" kartına ve aktarma gerekçesine bakın.
+2. Asistan **Pupa**'ya "Yazın yurtta kalabilir miyim?" diye sorun → kaynaklı cevap.
+3. "Bursum kesilirse yurt ücreti değişir mi?" → Pupa emin değilse **Personele ilet**.
+4. Çıkış yapıp **Derya Uçar** (Barınma Birimi) ile girin → talep listede. Gerekçe yazmadan aktarmayı deneyin: sistem izin vermez.
 
 ## Mimari
 
@@ -195,37 +175,19 @@ Tüm ayarlar ortam değişkenlerinden okunur; koda gömülü port, adres veya mo
 | `CORS_KAYNAKLARI` | `http://localhost:3000,http://127.0.0.1:3000` | API'ye doğrudan erişebilecek adresler |
 | `OTURUM_SAAT` | `12` | Oturum süresi |
 | `GUVENLI_CEREZ` | `false` | HTTPS arkasında `true` |
-| `DEMO_MODU` | `true` (compose) | Demo hesap listesi ve şifresiz demo girişi. Uygulamanın kendi varsayılanı kapalıdır; `docker-compose.yml` sunum için açar. |
-| `DEMO_SIFRE` | *(boş)* | Demo hesaplarının şifresi; boşsa rastgele üretilir |
-| `GIRIS_DENEME_SINIRI` | `10` | Bir hesaba bu kadar hatalı şifre girilirse hesap geçici olarak kilitlenir |
-| `GIRIS_KILIT_DAKIKA` | `15` | Kilit süresi (dakika) |
-| `EK_TATILLER` | *(boş)* | Resmî tatillere ek, iş günü sayılmayacak günler (`2026-10-30,2027-05-20`) |
-| `YENIDEN_ACMA_GUN` | `30` | Sonuçlanan talep kaç gün içinde yeniden açılabilir |
-| `SMTP_SUNUCU` | *(boş)* | E-posta bildirimi için sunucu; boşsa e-posta gönderilmez |
-| `SMTP_PORT`, `SMTP_KULLANICI`, `SMTP_SIFRE`, `SMTP_GONDEREN` | `587`, *(boş)* | E-posta hesabı bilgileri (sadece `.env` içinde) |
-| `SMTP_GUVENLIK` | `starttls` | `starttls`, `ssl` veya `yok` |
-| `UYGULAMA_URL` | `http://localhost:3000` | E-postadaki bağlantının açacağı adres |
+| `DEMO_MODU` | `true` | Personel ekranında "Örnek verileri sıfırla" düğmesi |
+| `OGRENCI1_SIFRE` … `PERSONEL3_SIFRE` | `.env.example`'daki örnekler | Test hesaplarının şifreleri; boşsa hesap girişe kapanır |
 
 ## Güvenlik ve KVKK
 
-- **Depoda şifre ve gizli bilgi yoktur.** Ayarlar `.env` dosyasındadır ve `.gitignore` ile dışarıda tutulur.
-- Şifreler veritabanında düz değil, tuzlanıp özetlenerek (PBKDF2-SHA256, 600.000 tur) saklanır. Oturum anahtarı JavaScript'in okuyamadığı bir çerezdedir.
-- Bir hesaba art arda hatalı şifre girilirse hesap geçici olarak kilitlenir (kaba kuvvet denemelerine karşı).
-  Hata mesajı e-postanın mı şifrenin mi yanlış olduğunu söylemez.
+- **Depoda gerçek şifre ve gizli bilgi yoktur.** Ayarlar `.env` dosyasındadır ve `.gitignore` ile dışarıda tutulur.
+  `.env.example` sadece örnek değerler içerir; kurgusal test hesaplarının şifreleri de bunlardandır.
+- Şifreler veritabanında düz değil, tuzlanıp özetlenerek (PBKDF2) saklanır. Oturum anahtarı JavaScript'in okuyamadığı bir çerezdedir.
 - Rol tarayıcıdan değil veritabanından gelir; her istekte sunucuda kontrol edilir. Öğrenci "akademisyen gibi" talep açamaz.
 - Her kullanıcı sadece kendi taleplerini, her personel sadece kendi biriminin taleplerini görür.
 - Asistana sorulan **soru metni saklanmaz**; istatistik için sadece zaman ve "cevaplandı / cevaplanamadı" bilgisi tutulur.
 - Yapay zekâ üniversitenin kendi sunucusunda çalışır; öğrenci verisi dış bir şirkete gönderilmez.
-- E-posta bildirimi isteğe bağlıdır ve e-postada **mesajın içeriği yer almaz**; sadece talep numarası, konu ve
-  uygulamanın bağlantısı bulunur. Ayrıntı ancak giriş yapılarak görülür.
 - Hatalı veya eksik girdi uygulamayı çökertmez; kullanıcıya anlaşılır bir Türkçe hata mesajı gösterilir.
-
-## Görünüm
-
-Arayüz Gebze Teknik Üniversitesi'nin kurumsal renkleriyle (lacivert, kırmızı, turuncu) hazırlandı; üst şeritte
-ve giriş ekranında GTÜ logosu yer alır. Öğrenci ekranı telefonda uygulama gibi kullanılacak şekilde tasarlandı
-(alt menü: Ana sayfa, Taleplerim, Asistan, Yeni talep). Personel ve akademisyen ekranları masaüstü içindir.
-GTÜ logosu üniversiteye aittir; bu projede yalnızca yarışma sunumu için kullanılmıştır.
 
 ## Proje yapısı
 
@@ -239,18 +201,15 @@ gishe/
 │  ├─ main.py              API, roller, talepler, /health
 │  ├─ ayarlar.py           Ortam değişkenlerinden ayar okuma
 │  ├─ asistan.py           RAG asistanı (Ollama'ya bağlanır)
-│  ├─ bildirim.py          İsteğe bağlı e-posta bildirimi
-│  ├─ tatiller.py          Resmî tatiller (iş günü hesabı)
-│  ├─ test_asistan.py      Asistanın doğru maddeyi bulduğunu deneyen testler
-│  └─ yonetmelikler/       Asistanın bilgi kaynağı (GTÜ metinleri ve örnek metinler)
+│  └─ yonetmelikler/       Asistanın bilgi kaynağı (örnek metinler)
 ├─ frontend/               Ön yüz
 │  ├─ Dockerfile           Derleme (Node) + sunum (nginx)
 │  ├─ package.json, build.mjs
 │  ├─ nginx/               Sunucu ayarı ve açılış betiği
-│  └─ src/                 HTML, CSS, JavaScript
+│  └─ src/                 HTML, CSS, JavaScript, görseller (GTÜ logosu, maskot Pupa)
 ├─ ollama/
 │  └─ Dockerfile           Qwen modelini derleme sırasında imaja indirir
-└─ docs/                   Ekran görüntüleri
+└─ docs/                   Ekran görüntüleri ve demo videosu
 ```
 
 ## Geliştiriciler
