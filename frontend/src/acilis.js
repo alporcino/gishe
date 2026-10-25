@@ -1,11 +1,11 @@
 // Gishe – giriş ekranının açılış animasyonu
-// 1) Gişe makinesinin yarığından bilet basılır  2) bilet numarası makara gibi dönüp durur
-// 3) bilet giriş ekranındaki yerine uçar ve ekran açılır.
+// 1) Gişe makinesinin yarığından giriş bileti basılır  2) saat damgası makara gibi dönüp durur
+// 3) bilet ekrandaki yerine oturur, sayfa açılır ve imleç e-posta alanına gelir.
 // Oturum başına bir kez oynar. Tıklayınca, Esc ile veya "Geç" ile atlanır.
 // Hareket azaltma tercih edilmişse hiç oynamaz. Sunumda tekrar izlemek için: /giris.html?acilis
 (function () {
   const kaplama = document.getElementById("acilis");
-  const hedef = document.getElementById("tanitim-bileti");
+  const hedef = document.getElementById("giris-bileti");
   if (!kaplama || !hedef) return;
 
   const ANAHTAR = "gishe-acilis-goruldu";
@@ -18,9 +18,14 @@
   try { sessionStorage.setItem(ANAHTAR, "1"); } catch (e) { /* önemsiz */ }
 
   // Tanıtım biletinin kopyası basılır; asıl bilet uçuş bitene kadar gizli kalır
+  // Kopyada kimlikler ve form alanları etkisizleştirilir (ekran okuyucu ve klavye için görünmez)
   const bilet = hedef.cloneNode(true);
   bilet.removeAttribute("id");
   bilet.setAttribute("aria-hidden", "true");
+  bilet.querySelectorAll("[id]").forEach((el) => el.removeAttribute("id"));
+  bilet.querySelectorAll("[for]").forEach((el) => el.removeAttribute("for"));
+  bilet.inert = true; // görünür kalır ama tıklanamaz, odaklanamaz
+  bilet.style.width = `${hedef.offsetWidth}px`;
   kaplama.querySelector(".acilis-kap").appendChild(bilet);
   hedef.style.visibility = "hidden";
 
@@ -29,7 +34,7 @@
   const metin = no.textContent;
   no.innerHTML = [...metin].map((k) => /\d/.test(k)
     ? `<span class="hane"><span>${"0123456789".split("").map((d) => `<span>${d}</span>`).join("")}</span></span>`
-    : `<span>${k}</span>`).join("");
+    : `<span>${k === " " ? "&nbsp;" : k}</span>`).join("");
   const makaralar = [...no.querySelectorAll(".hane > span")];
   const rakamlar = metin.replace(/\D/g, "").split("").map(Number);
 
@@ -43,6 +48,8 @@
     zamanlar.forEach(clearTimeout);
     hedef.style.visibility = "";
     kaplama.classList.add("bitti");
+    const ilkBos = [...hedef.querySelectorAll("input")].find((el) => !el.value);
+    if (ilkBos && matchMedia("(pointer: fine)").matches) ilkBos.focus(); // telefonda klavye kendiliğinden açılmasın
     setTimeout(() => kaplama.remove(), 450);
     document.removeEventListener("keydown", tus);
   }
@@ -55,7 +62,7 @@
   // 2) Makara: haneler sırayla, her biri birkaç tur atarak durur
   sonra(350, () => {
     makaralar.forEach((m, i) => {
-      m.style.transitionDuration = `${700 + i * 180}ms`;
+      m.style.transitionDuration = `${600 + i * 70}ms`;
       m.style.transform = `translateY(-${rakamlar[i] * 10}%)`;
     });
   });

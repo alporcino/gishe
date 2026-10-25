@@ -8,6 +8,7 @@ const durum = {
   sohbet: [],          // asistan konuşması (sadece bu sekmede tutulur, sunucuya kaydedilmez)
   bekleyenSoru: null,  // ana ekrandan asistana gönderilen soru
   taslak: null,        // asistandan "talep oluştur"a taşınan bilgiler
+  yeniBasilan: null,   // az önce oluşturulan talebin numarası (ayrıntıda "basılma" hareketi için)
   zamanlayici: null,
 };
 
@@ -46,6 +47,10 @@ async function ciz() {
     const aktif = a.dataset.sekme === h || (h.startsWith("#talep/") && a.dataset.sekme === "#talepler");
     if (aktif) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
   });
+  // Sekme değişince içerik yumuşakça gelsin (otomatik yenilemelerde değil, sadece geçişte)
+  kok.classList.remove("gecis");
+  void kok.offsetWidth;
+  kok.classList.add("gecis");
   try {
     if (h.startsWith("#talep/")) await talepDetay(Number(h.split("/")[1]));
     else if (h === "#talepler") await talepListesi();
@@ -145,7 +150,7 @@ async function talepDetay(id) {
   kok.innerHTML = `
     <div class="geri-satir"><a class="geri" href="#talepler" aria-label="Geri">←</a><strong>Talep ayrıntısı</strong></div>
 
-    <div style="display:flex;flex-direction:column;gap:6px">
+    <div style="display:flex;flex-direction:column;gap:6px" class="${durum.yeniBasilan === id ? "basildi" : ""}">
       <div class="satir"><span class="mono soluk">#${kacis(t.no)}</span>${durumCipi(t.durum)}</div>
       <h1 style="font-size:22px">${kacis(t.konu)}</h1>
       <span class="kucuk soluk">Oluşturuldu: ${tarihYaz(t.olusturma)}</span>
@@ -186,6 +191,7 @@ async function talepDetay(id) {
       <button class="buton" type="submit">Gönder</button>
     </form>`}`;
 
+  durum.yeniBasilan = null;
   kapanisBagla(t, () => talepDetay(id));
   const form = document.getElementById("mesaj-formu");
   if (form) {
@@ -196,6 +202,7 @@ async function talepDetay(id) {
       if (!alan.value.trim()) { hata.textContent = "Önce bir mesaj yaz."; return; }
       try {
         await api(`/api/talepler/${id}/mesaj`, { metin: alan.value });
+        bildir("Mesajın birime iletildi.");
         ciz();
       } catch (err) { hata.textContent = err.message; }
     });
@@ -311,10 +318,12 @@ async function sohbetButonu(e) {
       birim_id: m.cevap.birim_id,
     });
     m.kapandi = true;
+    durum.yeniBasilan = t.id;
+    bildir(`Sorun talebe dönüştürüldü${t.no ? ` (${t.no})` : ""}.`);
     location.hash = `#talep/${t.id}`;
   } catch (err) {
     buton.disabled = false;
-    alert(err.message);
+    bildir(err.message, "hata");
   }
 }
 
@@ -360,6 +369,8 @@ function yeniTalepEkrani() {
         aciklama: document.getElementById("aciklama").value,
         birim_id: birim ? Number(birim) : null,
       });
+      durum.yeniBasilan = yeni.id;
+      bildir(yeni.birim ? `Talebin oluşturuldu ve ${yeni.birim} birimine gitti.` : "Talebin oluşturuldu.");
       location.hash = `#talep/${yeni.id}`;
     } catch (err) {
       hata.textContent = err.message;

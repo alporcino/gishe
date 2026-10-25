@@ -36,6 +36,28 @@ async function api(yol, govde) {
   return veri;
 }
 
+// İşlem sonrası kısa onay mesajı (ekranın altında belirir, kendiliğinden kaybolur).
+// Ekran okuyucular da duyar (aria-live). tur: "basari" ya da "hata"
+function bildir(metin, tur = "basari") {
+  let kutu = document.getElementById("bildirimler");
+  if (!kutu) {
+    kutu = document.createElement("div");
+    kutu.id = "bildirimler";
+    kutu.className = "bildirimler";
+    kutu.setAttribute("role", "status");
+    kutu.setAttribute("aria-live", "polite");
+    document.body.appendChild(kutu);
+  }
+  const el = document.createElement("div");
+  el.className = `bildirim ${tur}`;
+  el.textContent = metin;
+  kutu.appendChild(el);
+  setTimeout(() => {
+    el.classList.add("gidiyor");
+    setTimeout(() => el.remove(), 300);
+  }, tur === "hata" ? 5000 : 3200);
+}
+
 // Kullanıcıdan gelen metni ekrana güvenle basmak için (XSS koruması)
 function kacis(metin) {
   return String(metin ?? "").replace(/[&<>"']/g, (k) => ({
@@ -187,6 +209,7 @@ function kapanisBagla(t, sonra) {
       if (!puan) { hata.textContent = "Önce 1-5 arası bir puan seç."; return; }
       try {
         await api(`/api/talepler/${t.id}/degerlendir`, { puan, yorum: document.getElementById("yorum").value });
+        bildir("Değerlendirmen kaydedildi. Teşekkürler!");
         sonra();
       } catch (err) { hata.textContent = err.message; }
     });
@@ -200,6 +223,7 @@ function kapanisBagla(t, sonra) {
       if (gerekce.length < 10) { hata.textContent = "Neyin çözülmediğini kısaca yaz (en az 10 karakter)."; return; }
       try {
         await api(`/api/talepler/${t.id}/yeniden-ac`, { gerekce });
+        bildir("Talep yeniden açıldı. Birim gerekçeni görecek.");
         sonra();
       } catch (err) { hata.textContent = err.message; }
     });

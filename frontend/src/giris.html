@@ -4,6 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#071A3F">
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <link rel="manifest" href="manifest.json">
   <title>Gishe – Giriş</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,13 +14,12 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="giris-govde">
-  <!-- Açılış: gişe makinesi bilet basar. Oturumda bir kez oynar; tıklayınca, Esc ile veya "Geç" ile atlanır.
-       Sunumda yeniden oynatmak için adresin sonuna ?acilis ekleyin. -->
+  <!-- Açılış: gişe makinesi giriş biletini basar ve bilet yerine oturur. Oturumda bir kez oynar;
+       tıklayınca, Esc ile veya "Geç" ile atlanır. Sunumda yeniden oynatmak için adrese ?acilis ekleyin. -->
   <div id="acilis" class="acilis" aria-hidden="true">
     <div class="acilis-sahne">
       <div class="acilis-yarik"></div>
       <div class="acilis-kap"></div>
-      <span class="acilis-alt">Talebin bir bilet gibi elinde. Her an nerede olduğunu görürsün.</span>
     </div>
     <button type="button" class="acilis-gec" tabindex="-1">Geç</button>
   </div>
@@ -25,81 +27,147 @@
   <main class="giris-sayfa">
     <section class="giris-sahne" aria-label="Gishe hakkında">
       <span class="logo-kutu"><img src="gtu-logo.png" alt="Gebze Teknik Üniversitesi" onerror="this.parentNode.remove()"></span>
-
       <div class="giris-baslik">
         <span class="giris-logo">Gishe</span>
         <p>Öğrenci İşleri ve idari birimlere ilettiğin her talep, şu an hangi masada olduğunu gösteren bir bilete dönüşür.</p>
       </div>
+      <ul class="giris-sozler">
+        <li>Her talebin bir sahibi var</li>
+        <li>Her adım görünür, kargo takibi gibi</li>
+        <li>Her soru yönetmelikten kaynaklı bir cevap bulur</li>
+      </ul>
+    </section>
 
-      <!-- Tanıtım bileti: bir talebin gerçek görünümü (örnek veri) -->
-      <div class="bilet" id="tanitim-bileti" aria-label="Örnek talep bileti: Yaz dönemi yurt başvurusu, şu an Barınma Biriminde">
+    <div class="bilet-alani">
+      <!-- Arkadaki örnek talep bileti (sadece görsel): bir talebin Gishe'de nasıl göründüğü -->
+      <div class="bilet ornek-bilet" aria-hidden="true">
         <div class="bilet-kagit">
           <div class="bilet-ust">
-            <span class="bilet-kurum">Gebze Teknik Üniversitesi<br>Talep bileti</span>
+            <span class="bilet-kurum">Talep bileti</span>
             <span class="bilet-no">GS-2401</span>
           </div>
           <span class="bilet-konu">Yaz dönemi yurt başvurusu</span>
           <ol class="bilet-rota">
             <li class="gecti">Öğrenci İşleri<span>Aktardı: kontenjanı Barınma Birimi belirliyor</span></li>
-            <li class="simdi">Barınma Birimi<span>Şu an burada · 1. iş günü, hedef 3 iş günü</span></li>
+            <li class="simdi">Barınma Birimi<span>Şu an burada · 1. iş günü, hedef 3</span></li>
             <li>Sonuç</li>
           </ol>
-          <div class="cubuk" aria-hidden="true"><span></span></div>
         </div>
       </div>
 
-      <ul class="giris-sozler">
-        <li>Her talebin bir sahibi var</li>
-        <li>Her adım görünür</li>
-        <li>Her soru kaynaklı bir cevap bulur</li>
-      </ul>
-    </section>
-
-    <div class="giris-form-alani">
-      <section class="giris-kutu">
-        <h1>Giriş yap</h1>
-        <p class="giris-alt-yazi">Kurumsal hesabınla gir. Hangi ekranı göreceğini hesabının rolü belirler.</p>
-
-        <form id="giris-formu" novalidate>
-          <div class="alan">
-            <label for="eposta">Kurumsal e-posta</label>
-            <input id="eposta" type="email" autocomplete="username" placeholder="ad.soyad@gtu.edu.tr">
+      <!-- Giriş bileti -->
+      <section class="bilet giris-bileti" id="giris-bileti" aria-labelledby="giris-baslik">
+        <div class="bilet-kagit">
+          <div class="bilet-ust">
+            <span class="bilet-kurum"><strong>Giriş bileti</strong><br>Gebze Teknik Üniversitesi</span>
+            <span class="bilet-no" id="saat-damgasi" aria-hidden="true">25.10.2026 09.00</span>
           </div>
-          <div class="alan">
-            <label for="sifre">Şifre</label>
-            <input id="sifre" type="password" autocomplete="current-password">
+
+          <div class="bilet-govde">
+            <h1 id="giris-baslik">Giriş yap</h1>
+            <form id="giris-formu" class="giris-formu" novalidate>
+              <div class="alan">
+                <label for="eposta">Kurumsal e-posta</label>
+                <input id="eposta" type="email" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="ad.soyad@gtu.edu.tr">
+              </div>
+              <div class="alan">
+                <label for="sifre">Şifre</label>
+                <div class="sifre-kutu">
+                  <input id="sifre" type="password" autocomplete="current-password" aria-describedby="caps-uyari">
+                  <button type="button" class="sifre-goster" id="sifre-goster" aria-pressed="false" aria-controls="sifre">Göster</button>
+                </div>
+                <span class="alan-ipucu" id="caps-uyari" aria-live="polite"></span>
+              </div>
+              <span id="hata" class="hata" role="alert"></span>
+              <button class="buton" type="submit">Giriş yap</button>
+            </form>
           </div>
-          <span id="hata" class="hata" role="alert"></span>
-          <button class="buton" type="submit">Giriş yap</button>
-        </form>
+
+          <div class="bilet-alt">
+            <span class="roller" aria-hidden="true"><span></span><span></span><span></span></span>
+            <span><strong>Tek giriş, üç ekran.</strong> Öğrenci, akademisyen ya da personel ekranını hesabının rolü belirler; seçilemez.</span>
+          </div>
+        </div>
       </section>
     </div>
   </main>
-  <footer class="giris-alt">Gebze Teknik Üniversitesi · Öğrenci ve idari birimler için talep takip sistemi</footer>
+  <footer class="giris-alt">Şifre sorunlarında üniversitenin bilgi işlem birimine başvur.</footer>
 
   <script src="config.js"></script>
   <script src="ortak.js"></script>
+  <script>
+    // Biletin saat damgası: gişe biletlerindeki gibi basıldığı anı gösterir
+    (function () {
+      const d = new Date();
+      const iki = (n) => String(n).padStart(2, "0");
+      document.getElementById("saat-damgasi").textContent =
+        `${iki(d.getDate())}.${iki(d.getMonth() + 1)}.${d.getFullYear()} ${iki(d.getHours())}.${iki(d.getMinutes())}`;
+    })();
+  </script>
   <script src="acilis.js"></script>
   <script>
     const form = document.getElementById("giris-formu");
     const hata = document.getElementById("hata");
+    const eposta = document.getElementById("eposta");
+    const sifre = document.getElementById("sifre");
+    const bilet = document.getElementById("giris-bileti");
+    const SON_EPOSTA = "gishe-son-eposta";
+
+    // Son kullanılan e-posta hatırlanır (şifre asla saklanmaz)
+    try {
+      const son = localStorage.getItem(SON_EPOSTA);
+      if (son) eposta.value = son;
+    } catch (e) { /* gizli sekme */ }
+
+    const goster = document.getElementById("sifre-goster");
+    goster.addEventListener("click", () => {
+      const acik = sifre.type === "password";
+      sifre.type = acik ? "text" : "password";
+      goster.textContent = acik ? "Gizle" : "Göster";
+      goster.setAttribute("aria-pressed", String(acik));
+      sifre.focus();
+    });
+
+    // Caps Lock açıksa uyar (şifre hatalarının en sık sebebi)
+    const caps = document.getElementById("caps-uyari");
+    const capsKontrol = (e) => {
+      if (e.getModifierState) caps.textContent = e.getModifierState("CapsLock") ? "Caps Lock açık" : "";
+    };
+    sifre.addEventListener("keydown", capsKontrol);
+    sifre.addEventListener("keyup", capsKontrol);
+    sifre.addEventListener("blur", () => { caps.textContent = ""; });
+
+    function salla() {
+      bilet.classList.remove("salla");
+      void bilet.offsetWidth;
+      bilet.classList.add("salla");
+    }
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       hata.textContent = "";
-      const eposta = document.getElementById("eposta").value.trim();
-      const sifre = document.getElementById("sifre").value;
-      if (!eposta || !sifre) { hata.textContent = "E-posta ve şifre gerekli."; return; }
+      const ep = eposta.value.trim();
+      if (!ep || !sifre.value) {
+        hata.textContent = "E-posta ve şifre gerekli.";
+        (ep ? sifre : eposta).focus();
+        salla();
+        return;
+      }
       const buton = form.querySelector("button[type=submit]");
       buton.disabled = true;
-      buton.textContent = "Giriş yapılıyor…";
+      buton.setAttribute("aria-busy", "true");
+      buton.textContent = "Giriş yapılıyor";
       try {
-        const ben = await api("/api/giris", { eposta, sifre });
+        const ben = await api("/api/giris", { eposta: ep, sifre: sifre.value });
+        try { localStorage.setItem(SON_EPOSTA, ep); } catch (e2) { /* önemsiz */ }
         location.href = ROL_SAYFASI[ben.rol];
       } catch (err) {
         hata.textContent = err.message;
         buton.disabled = false;
+        buton.removeAttribute("aria-busy");
         buton.textContent = "Giriş yap";
+        sifre.select();
+        salla();
       }
     });
 
@@ -107,6 +175,9 @@
     fetch(API_TABAN + "/api/ben", { credentials: "include" }).then((y) => (y.ok ? y.json() : null)).then((ben) => {
       if (ben) location.href = ROL_SAYFASI[ben.rol];
     }).catch(() => {});
+
+    // Açılış oynamıyorsa imleç doğrudan ilk boş alana gelsin
+    if (!document.getElementById("acilis")) (eposta.value ? sifre : eposta).focus();
   </script>
 </body>
 </html>

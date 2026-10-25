@@ -25,7 +25,7 @@ function jsKucult(metin) {
 
 const surumler = {};
 const dosyalar = readdirSync(KAYNAK);
-const RESIMLER = [".png", ".svg", ".jpg", ".jpeg", ".webp", ".ico"];
+const RESIMLER = [".png", ".svg", ".jpg", ".jpeg", ".webp", ".ico", ".json"]; // .json: manifest (ana ekrana ekle)
 for (const ad of dosyalar) {
   if (RESIMLER.includes(extname(ad).toLowerCase())) copyFileSync(join(KAYNAK, ad), join(HEDEF, ad));
 }

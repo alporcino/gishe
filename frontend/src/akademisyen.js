@@ -77,6 +77,7 @@ async function talepGonder(e) {
       birim_id: birim ? birim.id : null,
     });
     e.target.reset();
+    bildir(t.birim ? `Talebiniz oluşturuldu ve ${t.birim} birimine gitti.` : "Talebiniz oluşturuldu.");
     await listeCiz();
     detayAc(t.id);
   } catch (err) {
@@ -164,6 +165,7 @@ async function detayAc(id, kaydir = true) {
       if (!alan.value.trim()) { hata.textContent = "Önce bir mesaj yazın."; return; }
       try {
         await api(`/api/talepler/${id}/mesaj`, { metin: alan.value });
+        bildir("Mesajınız birime iletildi.");
         await listeCiz();
         detayAc(id, false);
       } catch (err) { hata.textContent = err.message; }
@@ -198,7 +200,8 @@ async function asistanaSor(e) {
             birim_id: c.birim_id,
             kategori: "Soru",
           });
-          kutu.innerHTML = '<span class="kucuk soluk">Sorunuz talebe dönüştürüldü.</span>';
+          kutu.innerHTML = "";
+          bildir(`Sorunuz talebe dönüştürüldü${t.no ? ` (${t.no})` : ""}.`);
           alan.value = "";
           await listeCiz();
           detayAc(t.id);

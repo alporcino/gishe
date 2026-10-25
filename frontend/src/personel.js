@@ -168,14 +168,14 @@ async function detayCiz() {
     </form>`}`;
 
   if (kapali) return;
-  formBagla("yanit-formu", "yanit-hata", () => {
+  formBagla("yanit-formu", "yanit-hata", "Yanıt talep sahibine gönderildi.", () => {
     const metin = document.getElementById("yanit").value.trim();
     if (!metin) throw new Error("Önce bir yanıt yazın.");
     return api(`/api/talepler/${t.id}/mesaj`, { metin });
   });
-  formBagla("durum-formu", null, () =>
+  formBagla("durum-formu", null, "Durum güncellendi.", () =>
     api(`/api/talepler/${t.id}/durum`, { durum: document.getElementById("durum").value }));
-  formBagla("aktar-formu", "aktar-hata", () => {
+  formBagla("aktar-formu", "aktar-hata", "Talep aktarıldı. Talep sahibi gerekçeyi görecek.", () => {
     const gerekce = document.getElementById("gerekce").value.trim();
     if (gerekce.length < 10) throw new Error("Gerekçe zorunludur (en az 10 karakter). Talep sahibi bu gerekçeyi görecek.");
     return api(`/api/talepler/${t.id}/aktar`, { birim_id: Number(document.getElementById("hedef-birim").value), gerekce });
@@ -183,16 +183,17 @@ async function detayCiz() {
 }
 
 // Bir formu gönderince işlemi yapar, hata varsa gösterir, başarılıysa ekranı yeniler
-function formBagla(formId, hataId, islem) {
+function formBagla(formId, hataId, basariMesaji, islem) {
   document.getElementById(formId).addEventListener("submit", async (e) => {
     e.preventDefault();
     const hata = hataId ? document.getElementById(hataId) : null;
     if (hata) hata.textContent = "";
     try {
       await islem();
+      bildir(basariMesaji);
       await yenile();
     } catch (err) {
-      if (hata) hata.textContent = err.message; else alert(err.message);
+      if (hata) hata.textContent = err.message; else bildir(err.message, "hata");
     }
   });
 }
