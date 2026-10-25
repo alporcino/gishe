@@ -40,8 +40,11 @@ async function baslat() {
   await listeCiz();
   setInterval(() => {
     listeCiz();
-    const alan = document.getElementById("mesaj");
-    if (a.seciliId && (!alan || (!alan.value && document.activeElement !== alan))) detayAc(a.seciliId, false);
+    const yaziliyor = ["mesaj", "yorum", "yeniden-gerekce"].some((x) => {
+      const alan = document.getElementById(x);
+      return alan && (alan.value || document.activeElement === alan);
+    }) || document.querySelector(".puan-secici .dolu");
+    if (a.seciliId && !yaziliyor) detayAc(a.seciliId, false);
   }, 10000);
 }
 
@@ -93,10 +96,10 @@ async function listeCiz() {
     return `<div class="talep-satiri">
       <button type="button" data-id="${t.id}">
         <strong>${kacis(t.konu)}</strong>
-        <span class="cok-kucuk soluk">#${kacis(t.no)} · ${t.durum === "Sonuçlandı" ? "Sonuçlandı" : "Şu an: " + kacis(t.birim)}</span>
+        <span class="cok-kucuk soluk">#${kacis(t.no)} · ${t.durum === "Sonuçlandı" ? (t.puan ? "Sonuçlandı" : "Sonuçlandı · değerlendirmenizi bekliyor") : "Şu an: " + kacis(t.birim)}</span>
         ${t.durum === "Sonuçlandı" ? "" : `<span class="cok-kucuk" style="color:${t.suresi_asti ? "var(--kirmizi)" : "var(--soluk)"}">${kacis(s.kalan)}</span>`}
       </button>
-      <span>${t.suresi_asti ? '<span class="cip asti">Süre aşıldı</span> ' : ""}${durumCipi(t.durum)}</span>
+      <span class="satir">${yeniCipi(t.yeni_gelisme)}${t.suresi_asti ? '<span class="cip asti">Süre aşıldı</span>' : ""}${durumCipi(t.durum)}</span>
     </div>`;
   }).join("");
 }
@@ -128,6 +131,7 @@ async function detayAc(id, kaydir = true) {
         </div>
         ${s.cubuk}
         <div class="ust-satir cok-kucuk"><span class="soluk">${kacis(s.metin)}</span><strong>${kacis(s.kalan)}</strong></div>`}
+        ${kapanisBolumu(t)}
         ${t.aciklama ? `<div style="white-space:pre-line;font-size:14px">${kacis(t.aciklama)}</div>` : ""}
         ${kapali ? "" : `
         <form id="mesaj-formu" class="alan">
@@ -147,6 +151,8 @@ async function detayAc(id, kaydir = true) {
     a.seciliId = null;
     kutu.hidden = true;
   });
+  kapanisBagla(t, async () => { await listeCiz(); detayAc(id, false); });
+  listeCiz(); // talep görüldü: "Yeni gelişme" işareti kalksın
   const form = document.getElementById("mesaj-formu");
   if (form) {
     form.addEventListener("submit", async (e) => {
@@ -174,9 +180,9 @@ async function asistanaSor(e) {
   try {
     const c = await api("/api/asistan", { soru });
     kutu.innerHTML = `<div class="balon asistan ${c.emin ? "" : "emin-degil"}" style="max-width:100%">
-      ${c.emin ? "" : '<span class="cok-kucuk" style="color:var(--turuncu-yazi);font-weight:800">Emin değilim</span>'}
+      ${c.emin ? "" : `<span class="cok-kucuk" style="color:var(--turuncu-yazi);font-weight:800">${c.kip === "yapay_zeka" ? "Kısmen emin: yönetmelik sorunun tamamını karşılamıyor" : "Emin değilim"}</span>`}
       <span>${kacis(c.cevap)}</span>
-      ${c.kaynak ? `<span class="cip yeni" style="align-self:flex-start;white-space:normal">Kaynak: ${kacis(c.kaynak)}</span>` : ""}
+      ${kaynaklarCiz(c)}
       ${c.emin ? "" : `<div class="butonlar"><button type="button" class="buton" id="ilet">Personele ilet (${kacis(c.birim)})</button></div>`}
     </div>`;
     const ilet = document.getElementById("ilet");

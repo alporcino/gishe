@@ -3,18 +3,30 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0C3578">
   <title>Gishe – Giriş</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="giris-govde">
+  <div class="marka-serit"></div>
   <main class="giris-sayfa">
-    <section class="giris-kutu">
-      <div style="display:flex;flex-direction:column;gap:4px">
+    <section class="giris-tanitim" aria-label="Gishe hakkında">
+      <span class="logo-kutu"><img src="gtu-logo.png" alt="Gebze Teknik Üniversitesi" onerror="this.parentNode.remove()"></span>
+      <div style="display:flex;flex-direction:column;gap:12px">
         <span class="giris-logo">Gishe</span>
-        <span class="soluk">Üniversite talep ve destek sistemi</span>
+        <p>Gebze Teknik Üniversitesi talep ve destek sistemi. Talebinin her an nerede olduğunu bil.</p>
       </div>
+      <ul class="giris-maddeler">
+        <li>Her talebin bir sahibi var</li>
+        <li>Her adım görünür, kargo takibi gibi</li>
+        <li>Her soru kaynaklı bir cevap bulur</li>
+      </ul>
+    </section>
+
+    <div class="giris-form-alani">
+    <section class="giris-kutu">
 
       <form id="giris-formu" class="kart" novalidate>
         <h1 style="font-size:20px">Giriş yap</h1>
@@ -37,7 +49,9 @@
         <div id="hesaplar" class="hesap-listesi"></div>
       </details>
     </section>
+    </div>
   </main>
+  <footer class="giris-alt">Gebze Teknik Üniversitesi · Öğrenci ve idari birimler için talep takip sistemi</footer>
 
   <script src="config.js"></script>
   <script src="ortak.js"></script>

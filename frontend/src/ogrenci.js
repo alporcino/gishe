@@ -11,6 +11,18 @@ const durum = {
   zamanlayici: null,
 };
 
+// Alt menüdeki "Taleplerim" sekmesinde, bakılmamış gelişme sayısı
+function rozetGuncelle(talepler) {
+  const sayi = talepler.filter((t) => t.yeni_gelisme).length;
+  const a = document.querySelector('.alt-menu a[data-sekme="#talepler"]');
+  if (!a) return;
+  let r = a.querySelector(".menu-rozet");
+  if (!sayi) { if (r) r.remove(); return; }
+  if (!r) { r = document.createElement("span"); r.className = "menu-rozet"; a.appendChild(r); }
+  r.textContent = sayi;
+  r.setAttribute("aria-label", `${sayi} talepte yeni gelişme`);
+}
+
 const kok = document.getElementById("uygulama");
 
 async function baslat() {
@@ -23,6 +35,8 @@ async function baslat() {
   }
   window.addEventListener("hashchange", ciz);
   ciz();
+  // Uygulama açıkken birimden gelen gelişmeler 30 saniyede bir rozete yansır
+  setInterval(() => api("/api/talepler").then(rozetGuncelle).catch(() => {}), 30000);
 }
 
 async function ciz() {
@@ -48,9 +62,9 @@ async function ciz() {
 function talepKarti(t) {
   const s = sureBilgisi(t);
   return `<a class="kart talep-karti" href="#talep/${t.id}">
-    <div class="ust-satir"><span class="mono soluk">#${kacis(t.no)}</span>${durumCipi(t.durum)}</div>
+    <div class="ust-satir"><span class="mono soluk">#${kacis(t.no)}</span><span class="satir">${yeniCipi(t.yeni_gelisme)}${durumCipi(t.durum)}</span></div>
     <strong style="font-size:17px">${kacis(t.konu)}</strong>
-    ${t.durum === "Sonuçlandı" ? "" : `
+    ${t.durum === "Sonuçlandı" ? (t.puan ? "" : '<span class="cok-kucuk" style="color:var(--turuncu-yazi);font-weight:700">Değerlendirmeni bekliyor</span>') : `
     <div class="konum">
       <strong class="kucuk">Şu an: ${kacis(t.birim)}</strong>
       <span class="cok-kucuk soluk">${kacis(s.metin)}</span>
@@ -62,7 +76,10 @@ function talepKarti(t) {
 async function anaEkran() {
   const o = durum.ben;
   const talepler = await api("/api/talepler");
+  rozetGuncelle(talepler);
   const acik = talepler.filter((t) => t.durum !== "Sonuçlandı");
+  const yeniler = talepler.filter((t) => t.yeni_gelisme);
+  const degerlendirilecek = talepler.filter((t) => t.durum === "Sonuçlandı" && !t.puan && t.yeniden_acilabilir);
   kok.innerHTML = `
     <div class="ust-satir">
       <div>
@@ -80,10 +97,19 @@ async function anaEkran() {
       </div>
     </form>
 
+    ${yeniler.length ? `<a class="bildirim-seridi" href="#talep/${yeniler[0].id}">
+      <strong>${yeniler.length === 1 ? "Talebinde yeni gelişme var" : `${yeniler.length} talebinde yeni gelişme var`}</strong>
+      <span>${kacis(yeniler[0].konu)}${yeniler.length > 1 ? " ve diğerleri" : ""} →</span></a>` : ""}
+
     <section style="display:flex;flex-direction:column;gap:10px">
       <h2>Açık taleplerin</h2>
       ${acik.length ? acik.map(talepKarti).join("") : '<div class="kart soluk">Şu an açık talebin yok.</div>'}
     </section>
+
+    ${degerlendirilecek.length ? `<section style="display:flex;flex-direction:column;gap:10px">
+      <h2>Sonuçlanan talebini değerlendir</h2>
+      ${degerlendirilecek.map(talepKarti).join("")}
+    </section>` : ""}
 
     <div class="izgara2">
       <a class="kisayol" href="#yeni"><strong>Talep oluştur</strong><span>Doğru birime kendisi gider</span></a>
@@ -115,6 +141,7 @@ async function talepDetay(id) {
   const t = await api(`/api/talepler/${id}`);
   if (location.hash !== `#talep/${id}`) return; // kullanıcı bu arada başka ekrana geçtiyse
   const s = sureBilgisi(t);
+  api("/api/talepler").then(rozetGuncelle).catch(() => {}); // talep görüldü: rozeti güncelle
   kok.innerHTML = `
     <div class="geri-satir"><a class="geri" href="#talepler" aria-label="Geri">←</a><strong>Talep ayrıntısı</strong></div>
 
@@ -142,6 +169,8 @@ async function talepDetay(id) {
       </div>
     </div>`}
 
+    ${kapanisBolumu(t)}
+
     ${t.aciklama ? `<div class="kart"><span class="etiket">Açıklaman</span><span style="white-space:pre-line">${kacis(t.aciklama)}</span></div>` : ""}
 
     <section style="display:flex;flex-direction:column;gap:10px">
@@ -157,6 +186,7 @@ async function talepDetay(id) {
       <button class="buton" type="submit">Gönder</button>
     </form>`}`;
 
+  kapanisBagla(t, () => talepDetay(id));
   const form = document.getElementById("mesaj-formu");
   if (form) {
     form.addEventListener("submit", async (e) => {
@@ -172,8 +202,12 @@ async function talepDetay(id) {
   }
   // Personel bir işlem yaparsa ekran kendiliğinden güncellensin (yazı yazılmıyorsa)
   durum.zamanlayici = setInterval(() => {
-    const alan = document.getElementById("mesaj");
-    if (!alan || (!alan.value && document.activeElement !== alan)) talepDetay(id).catch(() => {});
+    const yaziliyor = ["mesaj", "yorum", "yeniden-gerekce"].some((x) => {
+      const alan = document.getElementById(x);
+      return alan && (alan.value || document.activeElement === alan);
+    });
+    const puanSecildi = document.querySelector(".puan-secici .dolu");
+    if (!yaziliyor && !puanSecildi) talepDetay(id).catch(() => {});
   }, 10000);
 }
 
@@ -231,9 +265,9 @@ function sohbetiCiz() {
       : `<button class="buton" data-islem="ilet" data-i="${i}" type="button">Personele ilet (${kacis(c.birim)})</button>
          <button class="buton ikincil" data-islem="vazgec" data-i="${i}" type="button">Vazgeç</button>`;
     return `<div class="balon asistan ${c.emin ? "" : "emin-degil"}">
-      ${c.emin ? "" : '<span class="cok-kucuk" style="color:var(--turuncu-yazi);font-weight:800">Emin değilim</span>'}
+      ${c.emin ? "" : `<span class="cok-kucuk" style="color:var(--turuncu-yazi);font-weight:800">${c.kip === "yapay_zeka" ? "Kısmen emin: yönetmelik sorunun tamamını karşılamıyor" : "Emin değilim"}</span>`}
       <span>${kacis(c.cevap)}</span>
-      ${c.kaynak ? `<span class="cip yeni" style="align-self:flex-start;white-space:normal">Kaynak: ${kacis(c.kaynak)}</span>` : ""}
+      ${kaynaklarCiz(c)}
       ${c.kip === "yedek" ? '<span class="cok-kucuk soluk">Yapay zekâ hazır olmadığı için ilgili madde doğrudan gösterildi.</span>' : ""}
       ${m.kapandi ? "" : `<div class="butonlar">${butonlar}</div>`}
     </div>`;

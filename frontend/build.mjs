@@ -3,8 +3,9 @@
 //   - CSS ve JS dosyalarındaki yorum satırlarını ve gereksiz boşlukları atar
 //   - HTML'deki dosya bağlantılarına içerik özetinden sürüm ekler (tarayıcı eski dosyayı önbellekten göstermesin)
 //   - config.js'e dokunmaz: o dosya konteyner açılırken ortam değişkeninden üretilir
+//   - Resimleri (ör. gtu-logo.png) olduğu gibi kopyalar
 import { createHash } from "node:crypto";
-import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { extname, join } from "node:path";
 
 const KAYNAK = "src";
@@ -24,6 +25,10 @@ function jsKucult(metin) {
 
 const surumler = {};
 const dosyalar = readdirSync(KAYNAK);
+const RESIMLER = [".png", ".svg", ".jpg", ".jpeg", ".webp", ".ico"];
+for (const ad of dosyalar) {
+  if (RESIMLER.includes(extname(ad).toLowerCase())) copyFileSync(join(KAYNAK, ad), join(HEDEF, ad));
+}
 for (const ad of dosyalar) {
   const tur = extname(ad);
   if (tur !== ".css" && tur !== ".js") continue;

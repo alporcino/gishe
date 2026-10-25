@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0C3578">
   <title>Gishe – Personel paneli</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=IBM+Plex+Mono:wght@500&display=swap">
@@ -11,13 +12,13 @@
 <body>
   <div class="panel">
     <aside class="yan-menu">
-      <div style="display:flex;flex-direction:column;gap:2px">
-        <span class="logo">Gishe</span>
-        <span style="font-size:13px;color:#C7CDD4;padding:0 8px">Personel paneli</span>
+      <div style="display:flex;flex-direction:column;gap:12px;padding:0 4px">
+        <span class="logo-kutu"><img class="gtu-logo" src="gtu-logo.png" alt="Gebze Teknik Üniversitesi" style="height:56px;width:auto;display:block" onerror="this.parentNode.remove()"></span>
+        <span class="marka-yazi"><strong>Gishe</strong><span>Personel paneli</span></span>
       </div>
-      <div style="display:flex;flex-direction:column;gap:2px;padding:12px;border-radius:10px;background:var(--gece-2)">
+      <div class="kullanici">
         <strong id="kullanici-ad" style="font-size:14px">…</strong>
-        <span id="kullanici-birim" style="font-size:12px;color:#C7CDD4"></span>
+        <span id="kullanici-birim" style="font-size:12px;color:var(--gece-yazi)"></span>
       </div>
       <nav aria-label="Talep filtreleri" id="filtreler">
         <button type="button" data-filtre="acik" aria-pressed="true">Açık talepler <span class="rozet" id="rozet-acik">0</span></button>

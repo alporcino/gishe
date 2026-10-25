@@ -74,6 +74,7 @@ function istatistikCiz(ist) {
     <div class="istatistik"><span class="kucuk soluk">Açık talep</span><strong>${ist.acik}</strong>${dagilim}</div>
     <div class="istatistik"><span class="kucuk soluk">Hedef süreyi aşan</span><strong style="color:${ist.suresi_asan ? "var(--kirmizi)" : "inherit"}">${ist.suresi_asan}</strong></div>
     <div class="istatistik"><span class="kucuk soluk">Bilgi bekleyen</span><strong>${ist.bilgi_bekleyen}</strong></div>
+    <div class="istatistik"><span class="kucuk soluk">Memnuniyet</span><strong>${ist.memnuniyet_ort === null ? "–" : `${String(ist.memnuniyet_ort).replace(".", ",")} / 5`}</strong><span class="cok-kucuk soluk">${ist.memnuniyet_sayi} değerlendirme · son 30 günde ${ist.yeniden_acilan_30g} yeniden açılan</span></div>
     <div class="istatistik"><span class="kucuk soluk">Asistanın bugün yanıtladığı</span><strong>${ist.asistan_bugun - ist.asistan_emin_degil} / ${ist.asistan_bugun}</strong><span class="cok-kucuk soluk">Tüm birimler, soru metni saklanmaz</span></div>`;
 }
 
@@ -91,7 +92,9 @@ function tabloCiz() {
     <tr class="${t.id === p.seciliId ? "secili" : ""}">
       <td class="mono">#${kacis(t.no)}</td>
       <td><button class="konu-buton" type="button" data-id="${t.id}">${kacis(t.konu)}</button>
-        ${t.kategori ? `<div class="cok-kucuk soluk">${kacis(t.kategori)}</div>` : ""}</td>
+        ${t.durum !== "Sonuçlandı" && t.birimde_yeni ? '<span class="cip yeni-gelisme" title="Talep sahibinin son işlemine henüz bakılmadı">Bakılmadı</span>' : ""}
+        ${t.kategori ? `<div class="cok-kucuk soluk">${kacis(t.kategori)}</div>` : ""}
+        ${t.puan ? `<div class="cok-kucuk">${yildizlar(t.puan)}</div>` : ""}</td>
       <td>${kacis(t.talep_eden)}<div>${rolEtiketi(t.talep_eden_rol, t.talep_eden_rol_adi)}</div></td>
       <td style="${t.suresi_asti ? "color:var(--kirmizi);font-weight:700" : ""}">${t.durum === "Sonuçlandı" ? "–" : `${t.gecen_gun + 1}. iş günü`}</td>
       <td>${t.suresi_asti ? '<span class="cip asti">Süre aşıldı</span> ' : ""}${durumCipi(t.durum)}</td>
@@ -129,7 +132,7 @@ async function detayCiz() {
       <div style="margin-top:10px">${yolculukCiz(t)}</div>
     </details>
 
-    ${kapali ? '<div class="bilgi-kutusu">Bu talep sonuçlandı.</div>' : `
+    ${kapali ? `<div class="bilgi-kutusu">Bu talep sonuçlandı.${t.puan ? ` Talep sahibinin değerlendirmesi: ${yildizlar(t.puan)}${t.degerlendirme ? `<br><span class="kucuk">“${kacis(t.degerlendirme)}”</span>` : ""}` : " Talep sahibi henüz değerlendirmedi."}</div>` : `
     <form id="yanit-formu" class="ayrac">
       <label class="etiket" for="yanit">Talep sahibine yanıt</label>
       <textarea id="yanit" placeholder="Talep sahibinin göreceği mesaj"></textarea>

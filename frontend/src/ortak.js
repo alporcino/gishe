@@ -80,6 +80,8 @@ function yolculukCiz(t) {
     const noktaSinif = son && t.durum !== "Sonuçlandı" ? "simdi" : (o.tur.startsWith("mesaj") ? "mesaj" : "");
     let ic = "";
     if (o.tur === "aktarildi") ic = `<div class="kutu gerekce"><strong>Aktarma gerekçesi:</strong> ${kacis(o.metin)}</div>`;
+    else if (o.tur === "yeniden_acildi") ic = `<div class="kutu gerekce"><strong>Neden yeniden açıldı:</strong> ${kacis(o.metin)}</div>`;
+    else if (o.tur === "degerlendirme") ic = o.metin ? `<div class="kutu">${kacis(o.metin)}</div>` : "";
     else if (o.tur.startsWith("mesaj")) ic = `<div class="kutu">${kacis(o.metin)}</div>`;
     else if (o.metin) ic = `<span class="cok-kucuk soluk">${kacis(o.metin)}</span>`;
     return `<li>
@@ -92,6 +94,106 @@ function yolculukCiz(t) {
     </li>`;
   }).join("");
   return `<ol class="yolculuk">${satirlar}</ol>`;
+}
+
+// Asistan cevabının altındaki kaynak bilgisi. Model birden fazla maddeye dayanabilir; hepsi gösterilir.
+// "İlgili" maddeler cevap değildir: asistan emin olmadığında göz atılabilecek maddelerdir.
+function kaynaklarCiz(c) {
+  const kaynaklar = c.kaynaklar || (c.kaynak ? [c.kaynak] : []);
+  let html = "";
+  if (kaynaklar.length) {
+    html += `<div class="kaynaklar"><span class="cok-kucuk soluk">${kaynaklar.length > 1 ? "Kaynaklar" : "Kaynak"}</span>
+      ${kaynaklar.map((k) => `<span class="cip yeni kaynak">${kacis(k)}</span>`).join("")}</div>`;
+  }
+  if (c.ilgili && c.ilgili.length) {
+    html += `<div class="kaynaklar"><span class="cok-kucuk soluk">Soruyu tam karşılamayan ama ilgili olabilecek maddeler</span>
+      ${c.ilgili.map((k) => `<span class="cip bilgi kaynak">${kacis(k)}</span>`).join("")}</div>`;
+  }
+  return html;
+}
+
+// "Yeni gelişme" çipi: karşı taraf talepte bir şey yaptı ve kullanıcı henüz bakmadı
+function yeniCipi(goster, metin = "Yeni gelişme") {
+  return goster ? `<span class="cip yeni-gelisme">${kacis(metin)}</span>` : "";
+}
+
+function yildizlar(puan) {
+  return `<span class="yildizlar" aria-label="${puan} / 5">${"★".repeat(puan)}<span class="soluk">${"★".repeat(5 - puan)}</span></span>`;
+}
+
+// Sonuçlanan talebin altında: değerlendirme (1-5) ve "çözülmedi, yeniden aç".
+// Öğrenci ve akademisyen ekranları ortak kullanır. sonra(): işlem bitince ekranı yenileyen fonksiyon.
+function kapanisBolumu(t) {
+  if (t.durum !== "Sonuçlandı") return "";
+  const degerlendirme = t.puan
+    ? `<div class="kart degerlendirildi">
+        <span class="etiket">Değerlendirmen</span>
+        <div>${yildizlar(t.puan)}</div>
+        ${t.degerlendirme ? `<span class="kucuk" style="white-space:pre-line">${kacis(t.degerlendirme)}</span>` : ""}
+      </div>`
+    : `<form class="kart" id="degerlendir-formu">
+        <span class="etiket" id="puan-etiket">Sonuçtan memnun kaldın mı?</span>
+        <div class="puan-secici" role="radiogroup" aria-labelledby="puan-etiket">
+          ${[1, 2, 3, 4, 5].map((p) => `<button type="button" role="radio" aria-checked="false" data-puan="${p}" aria-label="${p} yıldız">★</button>`).join("")}
+        </div>
+        <label class="gizli-etiket" for="yorum">Yorum</label>
+        <textarea id="yorum" maxlength="500" placeholder="İstersen kısa bir yorum yaz (isteğe bağlı)"></textarea>
+        <span class="hata" id="degerlendir-hata" role="alert"></span>
+        <button class="buton" type="submit" style="align-self:flex-start">Değerlendir</button>
+        <span class="cok-kucuk soluk">Puanın birimin hizmet kalitesini ölçmek için kullanılır.</span>
+      </form>`;
+  const yenidenAc = t.yeniden_acilabilir
+    ? `<details class="kart yeniden-ac">
+        <summary class="etiket">Sorun çözülmedi mi? Talebi yeniden aç</summary>
+        <form id="yeniden-ac-formu" class="alan" style="margin-top:8px">
+          <label for="yeniden-gerekce">Neyin çözülmediğini yaz (birim bunu görür)</label>
+          <textarea id="yeniden-gerekce" maxlength="500" placeholder="Örn. Belge teslim edildi ama üzerindeki bilgi hatalı."></textarea>
+          <span class="hata" id="yeniden-hata" role="alert"></span>
+          <button class="buton ikincil" type="submit" style="align-self:flex-start">Yeniden aç</button>
+        </form>
+      </details>`
+    : "";
+  return degerlendirme + yenidenAc;
+}
+
+function kapanisBagla(t, sonra) {
+  const form = document.getElementById("degerlendir-formu");
+  if (form) {
+    let puan = 0;
+    const butonlar = form.querySelectorAll("[data-puan]");
+    form.querySelector(".puan-secici").addEventListener("click", (e) => {
+      const b = e.target.closest("[data-puan]");
+      if (!b) return;
+      puan = Number(b.dataset.puan);
+      document.getElementById("degerlendir-hata").textContent = "";
+      butonlar.forEach((x) => {
+        x.setAttribute("aria-checked", String(Number(x.dataset.puan) === puan));
+        x.classList.toggle("dolu", Number(x.dataset.puan) <= puan);
+      });
+    });
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const hata = document.getElementById("degerlendir-hata");
+      if (!puan) { hata.textContent = "Önce 1-5 arası bir puan seç."; return; }
+      try {
+        await api(`/api/talepler/${t.id}/degerlendir`, { puan, yorum: document.getElementById("yorum").value });
+        sonra();
+      } catch (err) { hata.textContent = err.message; }
+    });
+  }
+  const ac = document.getElementById("yeniden-ac-formu");
+  if (ac) {
+    ac.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const hata = document.getElementById("yeniden-hata");
+      const gerekce = document.getElementById("yeniden-gerekce").value.trim();
+      if (gerekce.length < 10) { hata.textContent = "Neyin çözülmediğini kısaca yaz (en az 10 karakter)."; return; }
+      try {
+        await api(`/api/talepler/${t.id}/yeniden-ac`, { gerekce });
+        sonra();
+      } catch (err) { hata.textContent = err.message; }
+    });
+  }
 }
 
 // Her rolün kendi ekranı var. Rol bilgisi SUNUCUDAN gelir; kullanıcı seçemez.
