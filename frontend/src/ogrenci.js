@@ -269,6 +269,7 @@ function sohbetiCiz() {
       <span>${kacis(c.cevap)}</span>
       ${kaynaklarCiz(c)}
       ${c.kip === "yedek" ? '<span class="cok-kucuk soluk">Yapay zekâ hazır olmadığı için ilgili madde doğrudan gösterildi.</span>' : ""}
+      ${c.kip === "madde" ? '<span class="cok-kucuk soluk">Sorunu karşılayan madde aynen gösterildi.</span>' : ""}
       ${m.kapandi ? "" : `<div class="butonlar">${butonlar}</div>`}
     </div>`;
   }).join("");

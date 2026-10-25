@@ -383,10 +383,17 @@ def cevapla(soru: str, rol: str = "ogrenci") -> dict:
     birim = en_iyi["parca"]["birim"] if en_iyi["guclu"] else yonlendir(soru, rol)
 
     if DURUM["hazir"]:
+        # Madde soruyu güçlü karşılıyorsa modele sadece güçlü maddeler verilir: ilgisiz maddeler
+        # (ör. "yurt" kelimesi yüzünden gelen "yurt dışı staj") küçük modeli şaşırtıp BILMIYORUM dedirtmesin.
+        modele = [x["parca"] for x in sonuclar if x["guclu"]] if en_iyi["guclu"] else parcalar
         try:
-            cevap = modele_sor(soru, parcalar)
-            if not cevap or "bilmiyorum" in kucult(cevap).replace("ı", "i"):
+            cevap = modele_sor(soru, modele)
+            if not cevap or _bilmiyorum_mu(cevap):
+                # Arama soruyu karşılayan maddeyi bulduysa model çekinse de madde gösterilir (uydurma değil, metnin kendisi)
+                if en_iyi["guclu"]:
+                    return madde_cevabi(en_iyi["parca"], birim, "madde")
                 return emin_degilim(soru, rol, parcalar)
+            parcalar = modele
             metin, kaynaklar = kaynak_ayikla(cevap, parcalar)
             # Model cevap verse bile tek bir madde soruyu tam karşılamıyorsa kullanıcı uyarılır
             return {"cevap": metin, "kaynak": kaynaklar[0], "kaynaklar": kaynaklar, "ilgili": [],
@@ -397,12 +404,23 @@ def cevapla(soru: str, rol: str = "ogrenci") -> dict:
     # Yedek mod: model yok. Madde ancak soruyu güçlü karşılıyorsa "cevap" olarak gösterilir.
     if not en_iyi["guclu"]:
         return emin_degilim(soru, rol, parcalar)
+    return madde_cevabi(en_iyi["parca"], birim)
+
+
+def _bilmiyorum_mu(cevap: str) -> bool:
+    """Model "BILMIYORUM" dediyse True. Uzun bir cevabın içinde geçen tek bir "bilmiyorum" sayılmaz."""
+    k = kucult(cevap).replace("ı", "i").strip(" .!\n")
+    return k.startswith("bilmiyorum") or ("bilmiyorum" in k and len(k) < 60)
+
+
+def madde_cevabi(parca: dict, birim: str, kip: str = "yedek") -> dict:
+    """Soruyu güçlü karşılayan maddeyi olduğu gibi cevap olarak gösterir."""
     return {
-        "cevap": "Sorunla en ilgili yönetmelik maddesi:\n\n" + en_iyi["parca"]["metin"],
-        "kaynak": en_iyi["parca"]["kaynak"],
-        "kaynaklar": [en_iyi["parca"]["kaynak"]],
+        "cevap": "Sorunla en ilgili yönetmelik maddesi:\n\n" + parca["metin"],
+        "kaynak": parca["kaynak"],
+        "kaynaklar": [parca["kaynak"]],
         "ilgili": [],
         "emin": True,
         "birim": birim,
-        "kip": "yedek",
+        "kip": kip,  # yedek: model hazır değil · madde: model kısa cevap üretemedi
     }
