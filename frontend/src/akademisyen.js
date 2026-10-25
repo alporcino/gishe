@@ -124,13 +124,15 @@ async function detayAc(id, kaydir = true) {
     <div class="iki-sutun">
       <div style="flex:1 1 320px;min-width:0;display:flex;flex-direction:column;gap:12px">
         ${kapali ? `<div class="bilgi-kutusu" style="background:var(--yesil-acik);color:var(--yesil)">Talebiniz sonuçlandı.</div>` : `
-        <div class="konum">
-          <span class="cok-kucuk soluk" style="font-weight:800;letter-spacing:.04em">ŞU AN KİMDE?</span>
-          <strong>${kacis(t.birim)}</strong>
-          <span class="cok-kucuk soluk">${kacis(t.daire)}</span>
-        </div>
-        ${s.cubuk}
-        <div class="ust-satir cok-kucuk"><span class="soluk">${kacis(s.metin)}</span><strong>${kacis(s.kalan)}</strong></div>`}
+        <div class="kart kimde-karti${t.suresi_asti ? " asti" : ""}">
+          <span class="kimde-etiket">Şu an kimde?</span>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <strong>${kacis(t.birim)}</strong>
+            <span class="cok-kucuk soluk">${kacis(t.daire)}</span>
+          </div>
+          ${s.cubuk}
+          <div class="ust-satir cok-kucuk"><span class="soluk">${kacis(s.metin)}</span><strong>${kacis(s.kalan)}</strong></div>
+        </div>`}
         ${kapanisBolumu(t)}
         ${t.aciklama ? `<div style="white-space:pre-line;font-size:14px">${kacis(t.aciklama)}</div>` : ""}
         ${kapali ? "" : `

@@ -156,8 +156,8 @@ async function talepDetay(id) {
       <strong style="color:var(--yesil)">Talebin sonuçlandı</strong>
       <span class="kucuk">Son işlemi yapan birim: ${kacis(t.birim)}</span>
     </div>` : `
-    <div class="kart">
-      <span class="cok-kucuk soluk" style="font-weight:800;letter-spacing:.04em">ŞU AN KİMDE?</span>
+    <div class="kart kimde-karti${t.suresi_asti ? " asti" : ""}">
+      <span class="kimde-etiket">Şu an kimde?</span>
       <div style="display:flex;flex-direction:column;gap:2px">
         <strong style="font-size:16px">${kacis(t.birim)}</strong>
         <span class="kucuk soluk">${kacis(t.daire)}</span>
