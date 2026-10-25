@@ -1,44 +1,26 @@
 """
-Gishe asistanı için ölçüm (regresyon) testi. Yapay zekâ modeli GEREKMEZ: arama, "emin miyim?" kararı
-ve birim yönlendirmesi test edilir. Bir değişiklikten sonra asistanın kötüleşip kötüleşmediğini gösterir.
+Gishe asistanı için ölçüm (regresyon) testi. Yapay zekâ modeli GEREKMEZ: asistan "yedek modda" (model kapalıyken)
+ne cevap veriyorsa o ölçülür. Bir değişiklikten sonra asistanın kötüleşip kötüleşmediğini gösterir.
 
 Çalıştırma:
-    docker compose exec backend python test_asistan.py
-    (ya da backend/ klasöründe:  python test_asistan.py)
+    docker compose exec backend python test_asistan.py          (özet)
+    docker compose exec backend python test_asistan.py -v       (her soru tek tek)
 
-Yeni soru eklemek için SORULAR listesine bir satır ekleyin:
-    (soru, rol, beklenen: "emin" | "emin_degil", kaynakta geçmesi gereken metin veya None, beklenen birim veya None)
+Ölçülenler (soru_seti.py, yaklaşık 400 soru):
+  - Doğru cevap: kaynak doğru madde mi, sohbet mesajına sohbet cevabı mı verildi?
+  - YANLIŞ CEVAP: asistan emin olduğunu söyleyip YANLIŞ maddeyle cevap verdi mi? (En ağır hata: sıfır olmalı.)
+  - Kaçırılan: asistan "emin değilim" dedi ama aslında cevabı vardı (güvenli hata; model açıkken çoğu cevaplanır).
+  - Talep yönlendirmesi: "Yeni talep" formunda birim boş bırakılınca talep doğru birime gidiyor mu?
+
+Test, yanlış cevap sayısı 0 ve doğruluk en az %90 ise geçer.
 """
 import sys
+import time
 
 import asistan
+import soru_seti
 
-SORULAR = [
-    # --- Öğrenci: yönetmelikte cevabı olanlar
-    ("Yazın yurtta kalabilir miyim?", "ogrenci", "emin", "Yurt Yönergesi, Madde 4", "Barınma Birimi"),
-    ("Kayıt dondurmak için ne gerekiyor?", "ogrenci", "emin", "Madde 19", "Öğrenci İşleri"),
-    ("Kaydımı nasıl dondururum?", "ogrenci", "emin", "Madde 19", "Öğrenci İşleri"),
-    ("Devamsızlık sınırı nedir?", "ogrenci", "emin", "Madde 23", "Öğrenci İşleri"),
-    ("Dersten kalırsam ne olur?", "ogrenci", "emin", "Eğitim-Öğretim Yönetmeliği", "Öğrenci İşleri"),
-    ("Yatay geçiş için not ortalaması kaç olmalı?", "ogrenci", "emin", "Yatay Geçiş", "Öğrenci İşleri"),
-    ("Yan dal başvurusu için GNO şartı?", "ogrenci", "emin", "Yan Dal", "Öğrenci İşleri"),
-    ("Staj kaç iş günü?", "ogrenci", "emin", "Staj", "Fakülte Sekreterliği"),
-    ("Harç iadesi nasıl alınır?", "ogrenci", "emin", "İadesi", "Strateji Geliştirme"),
-    ("Mezuniyet için kaç kredi lazım?", "ogrenci", "emin", "Eğitim-Öğretim Yönetmeliği", None),
-    ("Azami öğrenim süresi kaç yıl?", "ogrenci", "emin", "Madde 14", "Öğrenci İşleri"),
-    ("Yemek bursu nasıl alınır?", "ogrenci", "emin", "Yemek bursu", "Öğrenci İşleri"),
-    ("Yurt ücreti ne zaman ödenir?", "ogrenci", "emin", "Yurt Yönergesi, Madde 6", "Barınma Birimi"),
-    ("Erasmus ile gidersem derslerim sayılır mı?", "ogrenci", "emin", "Değişim", None),
-    ("E-posta şifremi unuttum", "ogrenci", "emin", "e-posta şifresi", "Bilgi İşlem"),
-    # --- Öğrenci: cevabı olmayanlar veya iki konuyu birleştirenler (uydurmamalı)
-    ("Bursum kesilirse yurt ücreti değişir mi?", "ogrenci", "emin_degil", None, None),
-    ("Futbol takımı var mı?", "ogrenci", "emin_degil", None, "Öğrenci İşleri"),
-    ("Kantinde vegan yemek var mı?", "ogrenci", "emin_degil", None, None),
-    # --- Akademisyen
-    ("Projeksiyon bozuk ne yapmalıyım?", "akademisyen", "emin", "Teknik Hizmetler", "Yapı İşleri"),
-    ("Kongre için görevlendirme ne zaman istenir?", "akademisyen", "emin", "görevlendirme", "Personel Daire Başkanlığı"),
-    ("Yurt başvurusu nasıl yapılır?", "akademisyen", "emin_degil", None, None),
-]
+asistan.DURUM["hazir"] = False  # model olmadan ölç (yedek mod)
 
 # Talep yönlendirmesi (asistan değil, "Yeni talep" formunda birim boş bırakılınca)
 YONLENDIRME = [
@@ -54,43 +36,58 @@ YONLENDIRME = [
 ]
 
 
-def karar(soru: str, rol: str) -> dict:
-    """Model olmadan asistanın vereceği karar (yedek mod ile aynı mantık)."""
-    sonuc = asistan.ara_puanli(soru, rol)
-    if not sonuc or not sonuc[0]["guclu"]:
-        return {"emin": False, "kaynak": None, "birim": asistan.yonlendir(soru, rol)}
-    p = sonuc[0]["parca"]
-    return {"emin": True, "kaynak": p["kaynak"], "birim": p["birim"]}
+def degerlendir(r: dict, beklenen: str) -> str:
+    """'dogru', 'yanlis' (emin ama yanlış) veya 'kacirdi' (emin değilim dedi)."""
+    kaynaklar = r.get("kaynaklar") or []
+    if beklenen == "SOHBET":
+        return "dogru" if r["kip"] == "sohbet" else ("yanlis" if kaynaklar else "kacirdi")
+    if beklenen == "YOK":
+        return "dogru" if not r["emin"] and not kaynaklar and r["kip"] != "sohbet" else "yanlis"
+    tur, alternatifler = beklenen.split(":", 1)
+    alternatifler = [a.lower() for a in alternatifler.split("|")]
+    if any(a in k.lower() for k in kaynaklar for a in alternatifler):
+        return "dogru"
+    if tur == "MY" and ((not r["emin"] and not kaynaklar) or r["kip"] == "secenek"):
+        return "dogru"
+    return "yanlis" if kaynaklar or r["kip"] == "sohbet" else "kacirdi"
 
 
 def main() -> int:
-    hatalar = 0
-    print(f"{'SONUÇ':<6} {'ROL':<12} SORU")
-    for soru, rol, beklenen, kaynakta, birim in SORULAR:
-        k = karar(soru, rol)
-        sorunlar = []
-        if k["emin"] != (beklenen == "emin"):
-            sorunlar.append(f"beklenen {beklenen}, çıkan {'emin' if k['emin'] else 'emin_degil'}")
-        if kaynakta and k["kaynak"] and kaynakta.lower() not in k["kaynak"].lower():
-            sorunlar.append(f"kaynak '{k['kaynak']}' içinde '{kaynakta}' yok")
-        if birim and k["birim"] != birim:
-            sorunlar.append(f"birim {k['birim']} (beklenen {birim})")
-        hatalar += bool(sorunlar)
-        print(f"{'TAMAM' if not sorunlar else 'HATA':<6} {rol:<12} {soru}")
-        print(f"{'':<19}-> {'emin' if k['emin'] else 'emin değil'} · {k['kaynak'] or '-'} · {k['birim']}")
-        for s in sorunlar:
-            print(f"{'':<19}!! {s}")
+    ayrinti = "-v" in sys.argv
+    sayac = {"dogru": 0, "yanlis": 0, "kacirdi": 0}
+    t0 = time.monotonic()
+    for bolum in ("TEMEL", "EK", "TUZAK"):
+        sorular = getattr(soru_seti, bolum)
+        bolum_sayac = {"dogru": 0, "yanlis": 0, "kacirdi": 0}
+        for soru, rol, beklenen in sorular:
+            r = asistan.cevapla(soru, rol)
+            sonuc = degerlendir(r, beklenen)
+            bolum_sayac[sonuc] += 1
+            if sonuc != "dogru" or ayrinti:
+                etiket = {"dogru": "TAMAM ", "yanlis": "YANLIŞ", "kacirdi": "KAÇTI "}[sonuc]
+                print(f"{etiket} [{rol[:3]}] {soru}")
+                print(f"{'':10}-> {r['kip']} · {'; '.join(r.get('kaynaklar') or []) or '-'}   (beklenen {beklenen})")
+        for k, v in bolum_sayac.items():
+            sayac[k] += v
+        print(f"{bolum:6}: {bolum_sayac['dogru']}/{len(sorular)} doğru, {bolum_sayac['yanlis']} yanlış, "
+              f"{bolum_sayac['kacirdi']} kaçırılan")
 
     print("\nTalep yönlendirmesi")
+    yon_hata = 0
     for metin, rol, birim in YONLENDIRME:
         cikan = asistan.yonlendir(metin, rol)
-        tamam = cikan == birim
-        hatalar += not tamam
-        print(f"{'TAMAM' if tamam else 'HATA':<6} {rol:<12} {metin} -> {cikan}" + ("" if tamam else f" (beklenen {birim})"))
+        if cikan != birim:
+            yon_hata += 1
+            print(f"HATA   {rol:12} {metin} -> {cikan} (beklenen {birim})")
+    print(f"{len(YONLENDIRME) - yon_hata}/{len(YONLENDIRME)} doğru")
 
-    toplam = len(SORULAR) + len(YONLENDIRME)
-    print(f"\n{toplam - hatalar}/{toplam} test geçti.")
-    return 1 if hatalar else 0
+    toplam = sum(sayac.values())
+    oran = sayac["dogru"] / toplam
+    print(f"\nTOPLAM: {sayac['dogru']}/{toplam} doğru (%{100 * oran:.0f}) · YANLIŞ CEVAP: {sayac['yanlis']} · "
+          f"kaçırılan: {sayac['kacirdi']} · {1000 * (time.monotonic() - t0) / toplam:.0f} ms/soru")
+    gecti = sayac["yanlis"] == 0 and oran >= 0.90 and yon_hata == 0
+    print("SONUÇ:", "GEÇTİ" if gecti else "KALDI")
+    return 0 if gecti else 1
 
 
 if __name__ == "__main__":
