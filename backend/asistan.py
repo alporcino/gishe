@@ -285,15 +285,8 @@ Kurallar:
 - Kısa, net ve samimi Türkçe kullan (en fazla 5 cümle). Sayıları, süreleri ve koşulları metindeki gibi aynen ver.
 - Metinlerde olmayan hiçbir bilgiyi ekleme, tahmin yürütme, genel bilgi verme.
 - Metin soruyu kısmen cevaplıyorsa, bildiğin kısmı söyle ve gerisi için ilgili birime başvurulmasını öner.
-- Metin soruyu cevaplıyorsa MUTLAKA cevap ver; "daha fazla bilgi gerekir" gibi kaçamak cümleler kurma.
-- Öğrenci günlük dille sorabilir: "yazın" = yaz döneminde, "kalabilir miyim" = kalma hakkım var mı.
 - Cevabın en sonuna, dayandığın metinlerin numaralarını köşeli parantezle yaz. Örnek: [1] veya [1][3]
-- Soru bu metinlerle hiç cevaplanamıyorsa yalnızca BILMIYORUM yaz.
-
-Örnek:
-Metin: [1] Yaz okulunda ders alan öğrenciler yaz döneminde yurtta kalabilir; yaz için ayrıca başvuru yapılır.
-Soru: Yazın yurtta kalabilir miyim?
-Cevap: Yaz okulunda ders alıyorsan yaz döneminde yurtta kalabilirsin. Güz ve bahar dönemindeki yurt hakkın yaza kendiliğinden geçmez, yaz için ayrıca başvurman gerekir. [1]"""
+- Soru bu metinlerle hiç cevaplanamıyorsa yalnızca BILMIYORUM yaz."""
 
 
 def _model_yuklu_mu() -> bool:
@@ -390,17 +383,10 @@ def cevapla(soru: str, rol: str = "ogrenci") -> dict:
     birim = en_iyi["parca"]["birim"] if en_iyi["guclu"] else yonlendir(soru, rol)
 
     if DURUM["hazir"]:
-        # Madde soruyu güçlü karşılıyorsa modele sadece güçlü maddeler verilir: ilgisiz maddeler
-        # (ör. "yurt" kelimesi yüzünden gelen "yurt dışı staj") küçük modeli şaşırtıp BILMIYORUM dedirtmesin.
-        modele = [x["parca"] for x in sonuclar if x["guclu"]] if en_iyi["guclu"] else parcalar
         try:
-            cevap = modele_sor(soru, modele)
-            if not cevap or _bilmiyorum_mu(cevap) or _kacamak_mi(cevap) or not _dayaniyor_mu(cevap, modele):
-                # Arama soruyu karşılayan maddeyi bulduysa model çekinse de madde gösterilir (uydurma değil, metnin kendisi)
-                if en_iyi["guclu"]:
-                    return madde_cevabi(en_iyi["parca"], birim, "madde")
+            cevap = modele_sor(soru, parcalar)
+            if not cevap or "bilmiyorum" in kucult(cevap).replace("ı", "i"):
                 return emin_degilim(soru, rol, parcalar)
-            parcalar = modele
             metin, kaynaklar = kaynak_ayikla(cevap, parcalar)
             # Model cevap verse bile tek bir madde soruyu tam karşılamıyorsa kullanıcı uyarılır
             return {"cevap": metin, "kaynak": kaynaklar[0], "kaynaklar": kaynaklar, "ilgili": [],
@@ -411,44 +397,12 @@ def cevapla(soru: str, rol: str = "ogrenci") -> dict:
     # Yedek mod: model yok. Madde ancak soruyu güçlü karşılıyorsa "cevap" olarak gösterilir.
     if not en_iyi["guclu"]:
         return emin_degilim(soru, rol, parcalar)
-    return madde_cevabi(en_iyi["parca"], birim)
-
-
-def _bilmiyorum_mu(cevap: str) -> bool:
-    """Model "BILMIYORUM" dediyse True. Uzun bir cevabın içinde geçen tek bir "bilmiyorum" sayılmaz."""
-    k = kucult(cevap).replace("ı", "i").strip(" .!\n")
-    return k.startswith("bilmiyorum") or ("bilmiyorum" in k and len(k) < 60)
-
-
-# Küçük modelin metin elindeyken verdiği kaçamak cevaplar (cevap değil, cevap vermeme)
-KACAMAK = ("daha fazla bilgi", "bilgi sunabil", "yeterli bilgi", "net bir bilgi", "bilgi bulunmamakta",
-           "bilgi verilmemis", "belirtilmemis", "emin degilim", "ilgili birime danis")
-
-
-def _kacamak_mi(cevap: str) -> bool:
-    k = kucult(cevap).replace("ı", "i")
-    for a, b in (("ş", "s"), ("ğ", "g"), ("ü", "u"), ("ö", "o"), ("ç", "c")):
-        k = k.replace(a, b)
-    return any(x in k for x in KACAMAK) and len(k) < 160
-
-
-def _dayaniyor_mu(cevap: str, parcalar: list[dict]) -> bool:
-    """Cevap verilen maddelere gerçekten dayanıyor mu? Maddede de geçen en az 2 farklı kelime kökü içermeli.
-    "Bilgi sunabilmem için daha fazla bilgi gerekmektedir" gibi metinden bağımsız cümleler elenir."""
-    cevap_kokleri = set(kokler(re.sub(r"\[\d\]", " ", cevap)))
-    madde_kokleri = {kk for p in parcalar for kk in p["sayim"]}
-    ortak = {c for c in cevap_kokleri if any(benzerlik(c, m) >= 1.0 for m in madde_kokleri)}
-    return len(ortak) >= 2
-
-
-def madde_cevabi(parca: dict, birim: str, kip: str = "yedek") -> dict:
-    """Soruyu güçlü karşılayan maddeyi olduğu gibi cevap olarak gösterir."""
     return {
-        "cevap": "Sorunla en ilgili yönetmelik maddesi:\n\n" + parca["metin"],
-        "kaynak": parca["kaynak"],
-        "kaynaklar": [parca["kaynak"]],
+        "cevap": "Sorunla en ilgili yönetmelik maddesi:\n\n" + en_iyi["parca"]["metin"],
+        "kaynak": en_iyi["parca"]["kaynak"],
+        "kaynaklar": [en_iyi["parca"]["kaynak"]],
         "ilgili": [],
         "emin": True,
         "birim": birim,
-        "kip": kip,  # yedek: model hazır değil · madde: model kısa cevap üretemedi
+        "kip": "yedek",
     }

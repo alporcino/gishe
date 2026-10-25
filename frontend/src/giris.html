@@ -32,7 +32,7 @@
         <h1 style="font-size:20px">Giriş yap</h1>
         <div class="alan">
           <label for="eposta">Kurumsal e-posta</label>
-          <input id="eposta" type="email" autocomplete="username" placeholder="ad@ogr.gishe.edu.tr">
+          <input id="eposta" type="email" autocomplete="username" placeholder="ad.soyad@gtu.edu.tr">
         </div>
         <div class="alan">
           <label for="sifre">Şifre</label>
@@ -43,11 +43,6 @@
         <span class="cok-kucuk soluk">Hangi ekranı göreceğinizi hesabınızın rolü belirler; rol seçilemez.</span>
       </form>
 
-      <details class="kart" id="demo-kutu" open hidden>
-        <summary class="etiket" style="cursor:pointer;min-height:32px">Demo hesapları</summary>
-        <span class="cok-kucuk soluk">Sunum içindir; gerçek sistemde bu liste yoktur (DEMO_MODU=false). Bir hesaba tıklayınca o hesapla giriş yapılır.</span>
-        <div id="hesaplar" class="hesap-listesi"></div>
-      </details>
     </section>
     </div>
   </main>
@@ -65,11 +60,16 @@
       const eposta = document.getElementById("eposta").value.trim();
       const sifre = document.getElementById("sifre").value;
       if (!eposta || !sifre) { hata.textContent = "E-posta ve şifre gerekli."; return; }
+      const buton = form.querySelector("button[type=submit]");
+      buton.disabled = true;
+      buton.textContent = "Giriş yapılıyor…";
       try {
         const ben = await api("/api/giris", { eposta, sifre });
         location.href = ROL_SAYFASI[ben.rol];
       } catch (err) {
         hata.textContent = err.message;
+        buton.disabled = false;
+        buton.textContent = "Giriş yap";
       }
     });
 
@@ -78,32 +78,6 @@
       if (ben) location.href = ROL_SAYFASI[ben.rol];
     }).catch(() => {});
 
-    api("/api/demo-hesaplar").then((liste) => {
-      if (!liste.length) return;
-      document.getElementById("demo-kutu").hidden = false;
-      const gruplar = { ogrenci: "Öğrenciler", akademisyen: "Akademisyenler", personel: "Birim personeli" };
-      document.getElementById("hesaplar").innerHTML = Object.entries(gruplar).map(([rol, baslik]) => `
-        <div class="hesap-grup">
-          <span class="cok-kucuk" style="font-weight:800">${baslik}</span>
-          ${liste.filter((h) => h.rol === rol).map((h) => `
-            <button type="button" class="hesap" data-eposta="${kacis(h.eposta)}">
-              <strong>${kacis(h.ad)}</strong><span>${kacis(h.eposta)}</span>
-            </button>`).join("")}
-        </div>`).join("");
-      document.getElementById("hesaplar").addEventListener("click", async (e) => {
-        const b = e.target.closest("button.hesap");
-        if (!b) return;
-        hata.textContent = "";
-        b.disabled = true;
-        try {
-          const ben = await api("/api/demo-giris", { eposta: b.dataset.eposta });
-          location.href = ROL_SAYFASI[ben.rol];
-        } catch (err) {
-          hata.textContent = err.message;
-          b.disabled = false;
-        }
-      });
-    }).catch(() => {});
   </script>
 </body>
 </html>

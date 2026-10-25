@@ -112,6 +112,16 @@ function kaynaklarCiz(c) {
   return html;
 }
 
+// Asistanın yüzü: GTÜ maskotu Pupa. Asistanın her cevabı Pupa'nın görseliyle birlikte gösterilir.
+const ASISTAN_ADI = "Pupa";
+function pupaGorseli(buyuk = false) {
+  const b = buyuk ? 56 : 36;
+  return `<img class="pupa${buyuk ? " buyuk" : ""}" src="pupa.png" alt="" width="${b}" height="${b}" onerror="this.remove()">`;
+}
+function asistanBalonu(ic, sinif = "", stil = "") {
+  return `<div class="asistan-satir" aria-label="${ASISTAN_ADI}">${pupaGorseli()}<div class="balon asistan ${sinif}"${stil ? ` style="${stil}"` : ""}>${ic}</div></div>`;
+}
+
 // "Yeni gelişme" çipi: karşı taraf talepte bir şey yaptı ve kullanıcı henüz bakmadı
 function yeniCipi(goster, metin = "Yeni gelişme") {
   return goster ? `<span class="cip yeni-gelisme">${kacis(metin)}</span>` : "";

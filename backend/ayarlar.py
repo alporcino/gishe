@@ -55,12 +55,20 @@ CORS_KAYNAKLARI = _liste("CORS_KAYNAKLARI", "http://localhost:3000,http://127.0.
 OTURUM_SAAT = _sayi("OTURUM_SAAT", 12, 1, 24 * 7)
 GUVENLI_CEREZ = _evet_hayir("GUVENLI_CEREZ", False)  # HTTPS arkasında yayınlanırsa true yapılmalı
 
-# Demo modu: giriş ekranında örnek hesaplar listelenir ve şifresiz demo girişi açılır.
+# Demo modu: personel ekranındaki "Örnek verileri sıfırla" düğmesini açar (sunum provaları için).
 # GÜVENLİ VARSAYILAN: kapalı. Sunum için docker-compose.yml bunu açar (DEMO_MODU=true);
-# uygulama başka bir yolla kurulursa demo girişi kendiliğinden açık OLMAZ.
+# uygulama başka bir yolla kurulursa veriler kendiliğinden silinebilir OLMAZ.
 DEMO_MODU = _evet_hayir("DEMO_MODU", False)
-# Demo hesaplarının şifresi depoda yazmaz. .env'de verilmezse her kurulumda rastgele üretilir.
-DEMO_SIFRE = os.getenv("DEMO_SIFRE", "").strip() or None
+
+
+def hesap_sifresi(degisken: str) -> str | None:
+    """Test hesabının şifresini ortam değişkeninden okur (ör. OGRENCI1_SIFRE). Şifreler koda gömülmez;
+    örnek değerler .env.example'dadır. Boş veya 6 karakterden kısaysa None döner (hesap girişe kapanır)."""
+    sifre = os.getenv(degisken, "").strip()
+    if sifre and len(sifre) < 6:
+        log.warning("%s en az 6 karakter olmalı; bu hesap girişe kapatıldı.", degisken)
+        return None
+    return sifre or None
 
 # Giriş denemesi sınırı: bir hesaba bu süre içinde bu kadar hatalı şifre girilirse hesap geçici olarak kilitlenir
 GIRIS_DENEME_SINIRI = int(_sayi("GIRIS_DENEME_SINIRI", 10, 3, 100))

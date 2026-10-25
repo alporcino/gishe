@@ -90,7 +90,7 @@ async function anaEkran() {
     </div>
 
     <form id="sor-formu" class="alan">
-      <label for="soru">Asistana sor</label>
+      <label for="soru">Pupa'ya sor</label>
       <div class="satir">
         <input id="soru" type="text" placeholder="Örn. yaz yurdu, öğrenci belgesi…" autocomplete="off">
         <button class="buton" type="submit">Sor</button>
@@ -216,10 +216,13 @@ async function asistanEkrani() {
   let modelDurumu = { mesaj: "" };
   try { modelDurumu = await api("/api/asistan/durum"); } catch (e) { /* önemsiz */ }
   kok.innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:2px">
-      <h1>Asistan</h1>
-      <span class="kucuk soluk">Yönetmeliklerden yanıt verir. Emin olmadığında personele iletir.</span>
-      <span class="cok-kucuk soluk">${kacis(modelDurumu.mesaj)}</span>
+    <div class="asistan-baslik">
+      ${pupaGorseli(true)}
+      <div style="display:flex;flex-direction:column;gap:2px">
+        <h1>${ASISTAN_ADI}</h1>
+        <span class="kucuk soluk">GTÜ'nün asistanı. Yönetmeliklerden yanıt verir, emin olmadığında personele iletir.</span>
+        <span class="cok-kucuk soluk">${kacis(modelDurumu.mesaj)}</span>
+      </div>
     </div>
     <div id="sohbet" class="sohbet"></div>
     <div class="oneriler" id="oneriler">
@@ -257,21 +260,19 @@ function sohbetiCiz() {
   if (!kutu) return;
   kutu.innerHTML = durum.sohbet.map((m, i) => {
     if (m.kim === "ben") return `<div class="balon ben">${kacis(m.metin)}</div>`;
-    if (m.bekliyor) return `<div class="balon asistan"><span class="dusunuyor">Asistan düşünüyor</span><span class="cok-kucuk soluk">Yapay zekâ bilgisayarında çalıştığı için birkaç saniye sürebilir.</span></div>`;
-    if (m.hata) return `<div class="balon asistan emin-degil"><span class="hata">${kacis(m.hata)}</span></div>`;
+    if (m.bekliyor) return asistanBalonu(`<span class="dusunuyor">${ASISTAN_ADI} düşünüyor</span><span class="cok-kucuk soluk">Yapay zekâ üniversitenin kendi sunucusunda çalıştığı için birkaç saniye sürebilir.</span>`);
+    if (m.hata) return asistanBalonu(`<span class="hata">${kacis(m.hata)}</span>`, "emin-degil");
     const c = m.cevap;
     const butonlar = c.emin
       ? `<button class="buton" data-islem="talep" data-i="${i}" type="button">Talep oluştur</button>`
       : `<button class="buton" data-islem="ilet" data-i="${i}" type="button">Personele ilet (${kacis(c.birim)})</button>
          <button class="buton ikincil" data-islem="vazgec" data-i="${i}" type="button">Vazgeç</button>`;
-    return `<div class="balon asistan ${c.emin ? "" : "emin-degil"}">
+    return asistanBalonu(`
       ${c.emin ? "" : `<span class="cok-kucuk" style="color:var(--turuncu-yazi);font-weight:800">${c.kip === "yapay_zeka" ? "Kısmen emin: yönetmelik sorunun tamamını karşılamıyor" : "Emin değilim"}</span>`}
       <span>${kacis(c.cevap)}</span>
       ${kaynaklarCiz(c)}
       ${c.kip === "yedek" ? '<span class="cok-kucuk soluk">Yapay zekâ hazır olmadığı için ilgili madde doğrudan gösterildi.</span>' : ""}
-      ${c.kip === "madde" ? '<span class="cok-kucuk soluk">Sorunu karşılayan madde aynen gösterildi.</span>' : ""}
-      ${m.kapandi ? "" : `<div class="butonlar">${butonlar}</div>`}
-    </div>`;
+      ${m.kapandi ? "" : `<div class="butonlar">${butonlar}</div>`}`, c.emin ? "" : "emin-degil");
   }).join("");
   kutu.lastElementChild?.scrollIntoView({ block: "nearest" });
 }

@@ -216,6 +216,13 @@ input:focus, textarea:focus, select:focus, .buton:focus-visible, a:focus-visible
 .balon { max-width: 88%; padding: 10px 14px; border-radius: 16px; font-size: 15px; white-space: pre-line; overflow-wrap: anywhere; }
 .balon.ben { align-self: flex-end; background: var(--mavi); color: #fff; border-radius: 16px 16px 4px 16px; }
 .balon.asistan { align-self: flex-start; background: var(--yuzey); border: 1px solid var(--cizgi); border-radius: 16px 16px 16px 4px; display: flex; flex-direction: column; gap: 10px; }
+.asistan-satir { align-self: flex-start; display: flex; align-items: flex-end; gap: 8px; max-width: 94%; min-width: 0; }
+.asistan-satir .balon.asistan { align-self: auto; max-width: 100%; min-width: 0; flex: 1 1 auto; }
+.pupa { width: 36px; height: 36px; flex: none; border-radius: 50%; object-fit: cover; background: #EDEAE4; border: 2px solid var(--gtu-sari); }
+.pupa.buyuk { width: 56px; height: 56px; }
+.asistan-baslik { display: flex; align-items: center; gap: 12px; }
+.asistan-etiket { display: inline-flex; align-items: center; gap: 8px; }
+.asistan-etiket .pupa { width: 28px; height: 28px; }
 .balon.asistan.emin-degil { border: 1px dashed var(--gtu-sari); background: #FFFCF6; }
 .balon .butonlar { display: flex; gap: 8px; flex-wrap: wrap; white-space: normal; }
 .oneriler { display: flex; gap: 8px; flex-wrap: wrap; }

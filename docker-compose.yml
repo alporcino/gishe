@@ -17,13 +17,17 @@ services:
   # Arka uç: FastAPI + iş mantığı + asistan
   backend:
     build: ./backend
+    # Önce .env.example (test hesabı şifreleri dahil örnek değerler), sonra varsa .env okunur;
+    # .env'deki değer aynı adlı örnek değerin yerine geçer. Böylece .env olmadan da tek komutla çalışır.
     env_file:
+      - path: .env.example
+        required: false
       - path: .env
         required: false
     environment:
       OLLAMA_URL: http://ollama:11434
       MODEL: ${MODEL:-qwen2.5:3b}
-      # Sunum için demo modu burada açılır; uygulamanın kendi varsayılanı KAPALIDIR.
+      # Sunum için "örnek verileri sıfırla" düğmesi burada açılır; uygulamanın kendi varsayılanı KAPALIDIR.
       # Gerçek kullanımda .env içinde DEMO_MODU=false yazın.
       DEMO_MODU: ${DEMO_MODU:-true}
     ports:

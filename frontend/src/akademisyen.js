@@ -176,15 +176,15 @@ async function asistanaSor(e) {
   const kutu = document.getElementById("asistan-cevap");
   const soru = alan.value.trim();
   if (!soru) { kutu.innerHTML = '<span class="hata">Önce bir soru yazın.</span>'; return; }
-  kutu.innerHTML = '<div class="balon asistan" style="max-width:100%"><span class="dusunuyor">Asistan düşünüyor</span></div>';
+  kutu.innerHTML = asistanBalonu(`<span class="dusunuyor">${ASISTAN_ADI} düşünüyor</span>`, "", "max-width:100%");
   try {
     const c = await api("/api/asistan", { soru });
-    kutu.innerHTML = `<div class="balon asistan ${c.emin ? "" : "emin-degil"}" style="max-width:100%">
+    kutu.innerHTML = asistanBalonu(`
       ${c.emin ? "" : `<span class="cok-kucuk" style="color:var(--turuncu-yazi);font-weight:800">${c.kip === "yapay_zeka" ? "Kısmen emin: yönetmelik sorunun tamamını karşılamıyor" : "Emin değilim"}</span>`}
       <span>${kacis(c.cevap)}</span>
       ${kaynaklarCiz(c)}
-      ${c.emin ? "" : `<div class="butonlar"><button type="button" class="buton" id="ilet">Personele ilet (${kacis(c.birim)})</button></div>`}
-    </div>`;
+      ${c.emin ? "" : `<div class="butonlar"><button type="button" class="buton" id="ilet">Personele ilet (${kacis(c.birim)})</button></div>`}`,
+      c.emin ? "" : "emin-degil", "max-width:100%");
     const ilet = document.getElementById("ilet");
     if (ilet) {
       ilet.addEventListener("click", async () => {

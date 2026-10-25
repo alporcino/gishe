@@ -33,6 +33,10 @@ async function baslat() {
     tabloCiz();
   });
   document.getElementById("cikis").addEventListener("click", cikisYap);
+  // Sıfırlama düğmesi sadece DEMO_MODU açıkken görünür (sunum provaları için)
+  fetch(API_TABAN + "/health").then((y) => y.json()).then((d) => {
+    document.getElementById("sifirla").hidden = !d.demo_modu;
+  }).catch(() => {});
   document.getElementById("sifirla").addEventListener("click", async () => {
     if (!confirm("Tüm talepler silinip örnek veriler yeniden yüklenecek ve herkesin oturumu kapanacak. Emin misiniz?")) return;
     await api("/api/demo/sifirla", {}).catch(() => {});

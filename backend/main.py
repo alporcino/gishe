@@ -66,24 +66,28 @@ BIRIMLER = [
     (7, "Personel Daire Başkanlığı", "Personel Daire Başkanlığı", 5, "akademisyen"),
 ]
 
-# Demo hesapları (gerçek kişiler değildir). Şifreleri depoda yazmaz: .env'deki DEMO_SIFRE
-# kullanılır, verilmemişse kurulumda rastgele üretilir. Demo modunda şifresiz demo girişi vardır.
-# (id, ad, e-posta, rol, açıklama, birim_id - sadece personel için)
+# Test hesapları: her rolden üçer tane. Kişiler KURGUSALDIR, gerçek kişilerle ilgisi yoktur.
+# Şifreler koda gömülü DEĞİLDİR: her hesabın şifresi kendi ortam değişkeninden okunur
+# (ör. OGRENCI1_SIFRE). Örnek değerler .env.example'dadır; docker compose bu dosyayı varsayılan olarak
+# yükler, .env varsa onun değerleri geçerli olur. Değişken boşsa hesaba rastgele şifre verilir (girişe kapanır).
+# (id, ad, e-posta, rol, açıklama, birim_id - sadece personel için, şifre değişkeni)
 KULLANICILAR = [
-    (1, "Ebru Y.", "ebru@ogr.gishe.edu.tr", "ogrenci", "Mimarlık · 1. sınıf", None),
-    (2, "Mert K.", "mert@ogr.gishe.edu.tr", "ogrenci", "İnşaat Mühendisliği · 2. sınıf", None),
-    (3, "Zeynep A.", "zeynep@ogr.gishe.edu.tr", "ogrenci", "Psikoloji · 3. sınıf", None),
-    (4, "Dr. Öğr. Üyesi Ayşe Demir", "ayse.demir@gishe.edu.tr", "akademisyen", "Bilgisayar Mühendisliği", None),
-    (5, "Prof. Dr. Can Arslan", "can.arslan@gishe.edu.tr", "akademisyen", "İnşaat Mühendisliği", None),
-    (11, "Öğrenci İşleri Personeli", "ogrenciisleri@gishe.edu.tr", "personel", "Öğrenci İşleri", 1),
-    (12, "Barınma Birimi Personeli", "barinma@gishe.edu.tr", "personel", "Barınma Birimi", 2),
-    (13, "Fakülte Sekreterliği Personeli", "fakulte@gishe.edu.tr", "personel", "Fakülte Sekreterliği", 3),
-    (14, "Strateji Personeli", "strateji@gishe.edu.tr", "personel", "Strateji Geliştirme", 4),
-    (15, "Bilgi İşlem Personeli", "bilgiislem@gishe.edu.tr", "personel", "Bilgi İşlem", 5),
-    (16, "Yapı İşleri Personeli", "yapiisleri@gishe.edu.tr", "personel", "Yapı İşleri", 6),
-    (17, "Personel Daire Personeli", "personeldaire@gishe.edu.tr", "personel", "Personel Daire Başkanlığı", 7),
+    (1, "Elif Yıldırım", "e.yildirim2026@gtu.edu.tr", "ogrenci", "Mimarlık · 1. sınıf", None, "OGRENCI1_SIFRE"),
+    (2, "Mert Kaya", "m.kaya2025@gtu.edu.tr", "ogrenci", "İnşaat Mühendisliği · 2. sınıf", None, "OGRENCI2_SIFRE"),
+    (3, "Zeynep Aksoy", "z.aksoy2024@gtu.edu.tr", "ogrenci", "Moleküler Biyoloji ve Genetik · 3. sınıf", None,
+     "OGRENCI3_SIFRE"),
+    (4, "Dr. Öğr. Üyesi Selin Ergüven", "selin.erguven@gtu.edu.tr", "akademisyen", "Bilgisayar Mühendisliği", None,
+     "AKADEMISYEN1_SIFRE"),
+    (5, "Prof. Dr. Tarık Bozdağ", "tarik.bozdag@gtu.edu.tr", "akademisyen", "İnşaat Mühendisliği", None,
+     "AKADEMISYEN2_SIFRE"),
+    (6, "Doç. Dr. Nihan Karaca", "nihan.karaca@gtu.edu.tr", "akademisyen", "Elektronik Mühendisliği", None,
+     "AKADEMISYEN3_SIFRE"),
+    (11, "Gökhan Şeker", "gokhan.seker@gtu.edu.tr", "personel", "Öğrenci İşleri", 1, "PERSONEL1_SIFRE"),
+    (12, "Derya Uçar", "derya.ucar@gtu.edu.tr", "personel", "Barınma Birimi", 2, "PERSONEL2_SIFRE"),
+    (16, "Serkan Avcı", "serkan.avci@gtu.edu.tr", "personel", "Yapı İşleri", 6, "PERSONEL3_SIFRE"),
 ]
-DEMO_EPOSTALAR = {e for _, _, e, _, _, _ in KULLANICILAR}
+# Test hesaplarına e-posta bildirimi GÖNDERİLMEZ: adresler gerçek alan adında ama kişiler kurgusal.
+TEST_EPOSTALAR = {h[2] for h in KULLANICILAR}
 
 
 # ---------------------------------------------------------------------------
@@ -263,14 +267,7 @@ def durum_degistir(con, talep_id, yeni_durum, kimden, zaman=None):
 def ornek_veri(con):
     """Sunum için gerçekçi örnek veriler. Zamanlar 'şimdi'ye göre ayarlanır."""
     con.executemany("INSERT INTO birimler VALUES (?,?,?,?,?)", BIRIMLER)
-    for kid, ad, eposta, rol, aciklama, birim_id in KULLANICILAR:
-        tuz = secrets.token_bytes(16)
-        sifre = ayarlar.DEMO_SIFRE or secrets.token_urlsafe(16)  # şifre koda gömülü değil
-        con.execute(
-            "INSERT INTO kullanicilar (id, ad, eposta, rol, aciklama, birim_id, sifre_tuz, sifre_ozet, sifre_tur) "
-            "VALUES (?,?,?,?,?,?,?,?,?)",
-            (kid, ad, eposta, rol, aciklama, birim_id, tuz.hex(), sifre_ozeti(sifre, tuz), SIFRE_TUR),
-        )
+    hesaplari_esitle(con)
     n = simdi()
 
     def once(**k):
@@ -288,7 +285,7 @@ def ornek_veri(con):
               "Barınma Birimi", once(days=1, hours=22))
     durum_degistir(con, t, "Bilgi bekleniyor", "Barınma Birimi", once(days=1, hours=22))
     olay_ekle(con, t, "mesaj_talep_eden", "Talep eden yanıt verdi",
-              "Gelir belgemi e-Devlet'ten aldım, belgeyi yanıt olarak ekledim.", "Ebru Y.", once(days=1, hours=9))
+              "Gelir belgemi e-Devlet'ten aldım, belgeyi yanıt olarak ekledim.", "Elif Yıldırım", once(days=1, hours=9))
     durum_degistir(con, t, "İnceleniyor", "Barınma Birimi", once(hours=5))
 
     # 2) Sonuçlanmış basit bir talep
@@ -354,14 +351,20 @@ def ornek_veri(con):
                   "Otomatik yönlendirme: Personel Daire Başkanlığı", kategori="Personel işleri",
                   zaman=once(hours=6))
 
+    # 11) Laboratuvarda elektrik arızası (üçüncü akademisyen)
+    talep_olustur(con, 6, 6, "Laboratuvar prizlerinde elektrik yok",
+                  "Deney masalarındaki prizlerin hiçbirinde elektrik yok, sigorta kapalı görünmüyor.",
+                  "Otomatik yönlendirme: Yapı İşleri", kategori="Teknik arıza",
+                  konum="Elektronik Mühendisliği, Devre Laboratuvarı", zaman=once(hours=4))
+
     # MATLAB talebi: akademisyen sonuçtan memnun, değerlendirmiş (personel panelindeki memnuniyet için)
     con.execute("UPDATE talepler SET puan=5, degerlendirme=? WHERE konu='MATLAB lisans yenileme'",
                 ("Hızlı çözüldü, teşekkürler.",))
     olay_ekle(con, 8, "degerlendirme", "Talep sahibi değerlendirdi: 5/5", "Hızlı çözüldü, teşekkürler.",
-              "Dr. Öğr. Üyesi Ayşe Demir", once(days=2, hours=20))
+              "Dr. Öğr. Üyesi Selin Ergüven", once(days=2, hours=20))
 
     # Görülme zamanları: herkes taleplerine bakmış sayılır, demo için iki istisna:
-    #  - Ebru, yurt talebindeki son gelişmeyi (İnceleniyor) henüz görmedi -> "Yeni gelişme"
+    #  - Elif, yurt talebindeki son gelişmeyi (İnceleniyor) henüz görmedi -> "Yeni gelişme"
     #  - Öğrenci İşleri, Mert'in yeni kayıt dondurma talebine henüz bakmadı -> "Yeni"
     son = "(SELECT MAX(o.id) FROM olaylar o WHERE o.talep_id = talepler.id)"
     con.execute(f"UPDATE talepler SET talep_eden_gordu={son}, birim_gordu={son}")
@@ -385,6 +388,42 @@ def gocler(con):
         sutun_ekle(con, "talepler", sutun, tanim)
 
 
+def hesaplari_esitle(con):
+    """Test hesaplarını veritabanına yazar ve şifrelerini ortam değişkenlerinden günceller.
+    Her açılışta çalışır: .env'de şifre değiştirilirse ya da boşaltılırsa yeniden başlatınca geçerli olur.
+    Eski sürümden kalan, artık listede olmayan ve talebi bulunmayan hesaplar silinir."""
+    gecerli = [h[0] for h in KULLANICILAR]
+    yer = ",".join("?" * len(gecerli))
+    eskiler = [r["id"] for r in con.execute(
+        f"SELECT id FROM kullanicilar WHERE id NOT IN ({yer}) "
+        "AND id NOT IN (SELECT talep_eden_id FROM talepler)", gecerli)]
+    for kid in eskiler:
+        con.execute("DELETE FROM oturumlar WHERE kullanici_id=?", (kid,))
+        con.execute("DELETE FROM kullanicilar WHERE id=?", (kid,))
+
+    eksik = []
+    for kid, ad, eposta, rol, aciklama, birim_id, degisken in KULLANICILAR:
+        sifre = ayarlar.hesap_sifresi(degisken)
+        var = con.execute("SELECT id FROM kullanicilar WHERE id=?", (kid,)).fetchone()
+        if var:
+            con.execute("UPDATE kullanicilar SET ad=?, eposta=?, rol=?, aciklama=?, birim_id=? WHERE id=?",
+                        (ad, eposta, rol, aciklama, birim_id, kid))
+        if not sifre:
+            eksik.append(degisken)
+            sifre = secrets.token_urlsafe(24)  # şifre verilmedi: rastgele şifre, kimse giremez
+        tuz = secrets.token_bytes(16)
+        if var:
+            con.execute("UPDATE kullanicilar SET sifre_tuz=?, sifre_ozet=?, sifre_tur=? WHERE id=?",
+                        (tuz.hex(), sifre_ozeti(sifre, tuz), SIFRE_TUR, kid))
+        else:
+            con.execute(
+                "INSERT INTO kullanicilar (id, ad, eposta, rol, aciklama, birim_id, sifre_tuz, sifre_ozet, sifre_tur) "
+                "VALUES (?,?,?,?,?,?,?,?,?)",
+                (kid, ad, eposta, rol, aciklama, birim_id, tuz.hex(), sifre_ozeti(sifre, tuz), SIFRE_TUR))
+    if eksik:
+        log.warning("Şifresi tanımlanmamış test hesapları (girişe kapalı): %s", ", ".join(eksik))
+
+
 def kur(sifirla: bool = False):
     if sifirla and DB_YOLU.exists():
         DB_YOLU.unlink()
@@ -393,6 +432,8 @@ def kur(sifirla: bool = False):
         gocler(con)
         if con.execute("SELECT COUNT(*) FROM birimler").fetchone()[0] == 0:
             ornek_veri(con)
+        else:
+            hesaplari_esitle(con)
 
 
 # ---------------------------------------------------------------------------
@@ -526,8 +567,6 @@ def talep_detayi(con, talep_id: int) -> dict:
 async def yasam_dongusu(app):
     kur()
     log.info("Veritabanı hazır: %s", DB_YOLU)
-    if ayarlar.DEMO_MODU and not ayarlar.DEMO_SIFRE:
-        log.info("Demo modu açık: demo hesaplarına giriş ekranındaki düğmelerle şifresiz girilir.")
     # Yapay zekâ modelini arka planda yokla ve belleğe al (model imajın içinde hazır gelir)
     threading.Thread(target=asistan.modeli_hazirla, daemon=True).start()
     yield
@@ -659,23 +698,6 @@ def giris(istek: Giris, response: Response):
         return oturum_ac(con, k, response)
 
 
-class DemoGiris(BaseModel):
-    eposta: str
-
-
-@app.post("/api/demo-giris")
-def demo_giris(istek: DemoGiris, response: Response):
-    """Sadece DEMO_MODU açıkken ve sadece örnek hesaplar için: sunumda şifresiz giriş."""
-    eposta = istek.eposta.strip().lower()
-    if not ayarlar.DEMO_MODU or eposta not in DEMO_EPOSTALAR:
-        raise HTTPException(404, "Demo girişi kapalı veya bu hesap bir demo hesabı değil.")
-    with baglan() as con:
-        k = con.execute("SELECT * FROM kullanicilar WHERE eposta=?", (eposta,)).fetchone()
-        if not k:
-            raise HTTPException(404, "Demo hesabı bulunamadı.")
-        return oturum_ac(con, k, response)
-
-
 @app.post("/api/cikis")
 def cikis(request: Request, response: Response):
     anahtar = request.cookies.get("oturum")
@@ -690,15 +712,6 @@ def cikis(request: Request, response: Response):
 @app.get("/api/ben")
 def ben(kullanici: dict = Depends(aktif_kullanici)):
     return kullanici
-
-
-@app.get("/api/demo-hesaplar")
-def demo_hesaplar():
-    """Giriş ekranında sunum kolaylığı için. DEMO_MODU=false iken boş liste döner."""
-    if not ayarlar.DEMO_MODU:
-        return []
-    return [{"ad": ad, "eposta": e, "rol": rol, "rol_adi": ROL_ADI[rol], "aciklama": a}
-            for _, ad, e, rol, a, _ in KULLANICILAR]
 
 
 # ----------------------------------------------------------------- Birimler
@@ -751,7 +764,7 @@ def talep_sahibine_bildir(con, t: dict, ne_oldu: str):
     if not bildirim.acik_mi():
         return
     k = con.execute("SELECT eposta FROM kullanicilar WHERE id=?", (t["talep_eden_id"],)).fetchone()
-    if k:
+    if k and k["eposta"] not in TEST_EPOSTALAR:  # kurgusal test hesaplarına e-posta gitmez
         bildirim.talep_gelismesi(k["eposta"], t["no"], t["konu"], ne_oldu)
 
 
@@ -970,6 +983,7 @@ def asistan_durumu():
 @app.post("/api/demo/sifirla")
 def demo_sifirla(kullanici: dict = Depends(rol_gerekli("personel"))):
     """Sunum provalarından sonra örnek verilere geri dönmek için (oturumlar da silinir).
+    Test hesaplarının şifreleri yine ortam değişkenlerinden okunur.
     Sadece DEMO_MODU açıkken çalışır; gerçek kullanımda (DEMO_MODU=false) veriler asla silinemez."""
     if not ayarlar.DEMO_MODU:
         raise HTTPException(403, "Demo modu kapalıyken veriler sıfırlanamaz.")
