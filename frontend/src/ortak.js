@@ -58,6 +58,17 @@ function bildir(metin, tur = "basari") {
   }, tur === "hata" ? 5000 : 3200);
 }
 
+// Form gönderilirken düğmeyi kilitler: yavaş bağlantıda çift tıklama aynı işlemi iki kez yapmasın.
+// Kullanım: await kilitle(e.submitter, () => api(...))
+async function kilitle(buton, is) {
+  if (buton) { buton.disabled = true; buton.setAttribute("aria-busy", "true"); }
+  try {
+    return await is();
+  } finally {
+    if (buton && buton.isConnected) { buton.disabled = false; buton.removeAttribute("aria-busy"); }
+  }
+}
+
 // Kullanıcıdan gelen metni ekrana güvenle basmak için (XSS koruması)
 function kacis(metin) {
   return String(metin ?? "").replace(/[&<>"']/g, (k) => ({
@@ -208,7 +219,7 @@ function kapanisBagla(t, sonra) {
       const hata = document.getElementById("degerlendir-hata");
       if (!puan) { hata.textContent = "Önce 1-5 arası bir puan seç."; return; }
       try {
-        await api(`/api/talepler/${t.id}/degerlendir`, { puan, yorum: document.getElementById("yorum").value });
+        await kilitle(e.submitter, () => api(`/api/talepler/${t.id}/degerlendir`, { puan, yorum: document.getElementById("yorum").value }));
         bildir("Değerlendirmen kaydedildi. Teşekkürler!");
         sonra();
       } catch (err) { hata.textContent = err.message; }
@@ -222,7 +233,7 @@ function kapanisBagla(t, sonra) {
       const gerekce = document.getElementById("yeniden-gerekce").value.trim();
       if (gerekce.length < 10) { hata.textContent = "Neyin çözülmediğini kısaca yaz (en az 10 karakter)."; return; }
       try {
-        await api(`/api/talepler/${t.id}/yeniden-ac`, { gerekce });
+        await kilitle(e.submitter, () => api(`/api/talepler/${t.id}/yeniden-ac`, { gerekce }));
         bildir("Talep yeniden açıldı. Birim gerekçeni görecek.");
         sonra();
       } catch (err) { hata.textContent = err.message; }

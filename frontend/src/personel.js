@@ -189,7 +189,7 @@ function formBagla(formId, hataId, basariMesaji, islem) {
     const hata = hataId ? document.getElementById(hataId) : null;
     if (hata) hata.textContent = "";
     try {
-      await islem();
+      await kilitle(e.submitter, islem);
       bildir(basariMesaji);
       await yenile();
     } catch (err) {

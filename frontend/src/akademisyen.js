@@ -164,7 +164,7 @@ async function detayAc(id, kaydir = true) {
       const hata = document.getElementById("mesaj-hata");
       if (!alan.value.trim()) { hata.textContent = "Önce bir mesaj yazın."; return; }
       try {
-        await api(`/api/talepler/${id}/mesaj`, { metin: alan.value });
+        await kilitle(e.submitter, () => api(`/api/talepler/${id}/mesaj`, { metin: alan.value }));
         bildir("Mesajınız birime iletildi.");
         await listeCiz();
         detayAc(id, false);

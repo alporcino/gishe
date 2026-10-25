@@ -15,9 +15,12 @@
   try { goruldu = sessionStorage.getItem(ANAHTAR) === "1"; } catch (e) { /* gizli sekme */ }
 
   if (azHareket || (goruldu && !zorla)) { kaplama.remove(); return; }
+  // Emniyet kemeri: bir şey ters giderse en geç 5 sn sonra açılış kapanır ve form görünür
+  const emniyet = setTimeout(() => { hedef.style.visibility = ""; kaplama.remove(); }, 5000);
   try { sessionStorage.setItem(ANAHTAR, "1"); } catch (e) { /* önemsiz */ }
 
-  // Tanıtım biletinin kopyası basılır; asıl bilet uçuş bitene kadar gizli kalır
+  try {
+  // Giriş biletinin kopyası basılır; asıl bilet yerine oturana kadar gizli kalır
   // Kopyada kimlikler ve form alanları etkisizleştirilir (ekran okuyucu ve klavye için görünmez)
   const bilet = hedef.cloneNode(true);
   bilet.removeAttribute("id");
@@ -46,6 +49,7 @@
     if (bitti) return;
     bitti = true;
     zamanlar.forEach(clearTimeout);
+    clearTimeout(emniyet);
     hedef.style.visibility = "";
     kaplama.classList.add("bitti");
     const ilkBos = [...hedef.querySelectorAll("input")].find((el) => !el.value);
@@ -67,7 +71,8 @@
     });
   });
   // 3) Uçuş: kopya bilet, asıl biletin yerine (ve eğimine) taşınır
-  sonra(1900, () => {
+  sonra(1900, () => { try { ucur(); } catch (hata) { kapat(); } });
+  function ucur() {
     const bas = bilet.getBoundingClientRect();
     const son = hedef.getBoundingClientRect();
     if (!son.width || !bas.width) { kapat(); return; }
@@ -90,5 +95,11 @@
       { transform: `translate(${dx}px, ${dy}px) rotate(${aci}deg) scale(${olcek})`, filter: "drop-shadow(0 24px 30px rgba(0,0,0,.35))" },
     ], { duration: 750, easing: "cubic-bezier(.5, 0, .2, 1)", fill: "forwards" });
     ucus.onfinish = kapat;
-  });
+  }
+  } catch (hata) {
+    // Animasyon kurulamazsa sayfa normal açılır
+    clearTimeout(emniyet);
+    hedef.style.visibility = "";
+    kaplama.remove();
+  }
 })();
