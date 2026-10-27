@@ -307,9 +307,6 @@ gishe/
 
 ## Yapay zekâyı nasıl kullandık
 
-<!-- TASLAK: Aşağıdaki maddeler gerçekte yaşadıklarımızdan derlendi. Teslimden önce kendi cümlelerinizle
-     gözden geçirin, eksik kalan kendi düzeltmelerinizi ekleyin. Bu yorum satırı GitHub'da görünmez. -->
-
 **Araç:** Claude (Anthropic). Ürünün içinde **değil**, sadece geliştirme aracı olarak kullanıldı.
 Ürün hiçbir bulut yapay zekâ servisine bağlanmaz; içindeki model yerel Qwen'dir.
 
@@ -336,7 +333,17 @@ gishe/
   Gişe sırası fikrini de Öğrenci İşleri ile görüştükten sonra askıya aldık.
 - **İçerik:** Sunumdaki kafa karıştırıcı verileri ve uygunsuz ifadeleri ayıklattık; ilk logonun Google logosuna benzediğini
   fark edip değiştirttik.
-- **Asistanın zayıflığı:** Denemelerde asistanın soru biraz farklı sorulunca şaşırdığını gördük; bunu iyileştirme listemize aldık.
+- **Asistanın zayıflığı:** Denemelerde asistanın soru biraz farklı sorulunca şaşırdığını, "Yazın yurtta kalabilir miyim?"
+  sorusunda "yaz" kelimesini "yazmak" sandığını gördük. Önce asistana, kendi sorularımızdan bir test seti hazırlattık;
+  sonra her düzeltmeden sonra testi tekrar çalıştırdık. İlk ölçümde 190 sorunun yaklaşık yarısı doğruydu; sonunda 396 soruda
+  %96 doğru ve 0 yanlış cevaba ulaştık.
+- **Gerçek modelle deneme:** Testler model kapalıyken geçiyordu, ama Qwen'i kendi bilgisayarımızda çalıştırınca
+  (`deneme_model.py`) modelin cevaba "kimlik kartı" gibi örnekten bilgi kattığını, "üç yıl" yerine "iki yıl" dediğini ve araya
+  Çince karakter kaçırdığını gördük. Bu çıktıları paylaşıp modelin cevabını denetleyen kontrolleri istedik; denetimden geçmeyen
+  cevapta yönetmelikteki cümlenin aynen gösterilmesine biz karar verdik.
+- **Teslim kuralları:** Asistanın önerdiği her değişikliği kendi bilgisayarımızda çalıştırıp kontrol ettikten sonra kendi
+  hesaplarımızdan commit'ledik. `.env` dosyasının depoya girmemesine ve ürünün hiçbir bulut yapay zekâ servisine
+  bağlanmamasına dikkat ettik.
 
 ## Telif
 
